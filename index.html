@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APC Command Center</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF5722; /* APC Orange */
+            --primary-dark: #E64A19;
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #2d3436;
+            --text-muted: #636e72;
+            --border: #dfe6e9;
+            --success: #00b894;
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- UTILS --- */
+        .hidden { display: none !important; }
+        .btn {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-secondary { background: #e0e0e0; color: #333; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-danger { background: #ffebee; color: #c62828; }
+        .btn-action { padding: 4px 8px; font-size: 0.8rem; }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            box-sizing: border-box;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            background: #fafafa;
+        }
+        input:focus { outline: 2px solid var(--primary); border-color: transparent; }
+
+        /* --- LOGIN PAGE --- */
+        .login-container {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #FF5722 0%, #FF8A65 100%);
+        }
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .login-logo {
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.5rem;
+        }
+
+        /* --- APP LAYOUT --- */
+        header {
+            background-color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .brand { font-weight: 800; font-size: 1.4rem; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .user-info { display: flex; align-items: center; gap: 15px; font-size: 0.9rem; font-weight: 500; }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+            padding-bottom: 50px;
+        }
+
+        /* --- TABS (ADMIN) --- */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* --- FORMS & CARDS --- */
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            position: relative;
+        }
+        .card.past-event {
+            opacity: 0.7;
+            border-left: 5px solid #ccc;
+        }
+        .card-title { margin-top: 0; color: var(--text-main); font-size: 1.2rem; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        /* --- TASK LIST --- */
+        .event-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .event-date { background: #eee; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; display: inline-block; }
+        .past-badge { background: #ffebee; color: #c62828; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-right: 5px; }
+
+        .task-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid transparent;
+        }
+        .task-row.taken { background: white; border-color: #e0e0e0; }
+        
+        .role-badge { font-weight: 700; font-size: 0.9rem; color: #444; }
+        .assignee { font-size: 0.85rem; color: var(--success); font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        
+        /* Checkbox Grid */
+        .checkbox-group { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer; }
+
+        /* Stats Table */
+        .stats-table { width: 100%; border-collapse: collapse; }
+        .stats-table th { text-align: left; padding: 10px; background: #eee; border-radius: 6px; font-size: 0.9rem; }
+        .stats-table td { padding: 10px; border-bottom: 1px solid #eee; font-weight: 500; }
+        .stats-rank { width: 30px; height: 30px; background: #333; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+        .rank-1 { background: gold; color: #333; }
+        .rank-2 { background: silver; color: #333; }
+        .rank-3 { background: #CD7F32; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px;
+            max-height: 90vh; overflow-y: auto;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- === VIEW 1: LOGIN PAGE === -->
+    <div id="loginView" class="login-container">
+        <div class="login-card">
+            <div class="login-logo">APC</div>
+            <h2 style="margin-top:0;">Welcome Back</h2>
+            <p style="color:var(--text-muted); margin-bottom:20px;">Sign in to APC Dashboard</p>
+            
+            <input type="text" id="loginUser" placeholder="Username" value="">
+            <input type="password" id="loginPass" placeholder="Password" value="">
+            
+            <button class="btn btn-primary" onclick="app.login()" style="width:100%;">Login</button>
+            <p id="loginError" style="color:red; font-size:0.9rem; margin-top:10px;"></p>
+        </div>
+    </div>
+
+    <!-- === VIEW 2: MAIN DASHBOARD === -->
+    <div id="dashboardView" class="hidden">
+        <header>
+            <div class="brand"><div class="login-logo" style="width:30px; height:30px; font-size:0.8rem; margin:0;">A</div> APC Club</div>
+            <div class="user-info">
+                <span id="displayUserName">User</span>
+                <button class="btn btn-danger" onclick="app.logout()" style="padding: 5px 12px; font-size:0.8rem;">Logout</button>
+            </div>
+        </header>
+
+        <div class="container">
+            
+            <!-- ADMIN ONLY TABS -->
+            <div id="adminTabs" class="tabs hidden">
+                <button class="tab-btn active" data-tab="events" onclick="app.switchTab('events')">Manage Events</button>
+                <button class="tab-btn" data-tab="stats" onclick="app.switchTab('stats')">🏆 Performance Stats</button>
+                <button class="tab-btn" data-tab="members" onclick="app.switchTab('members')">Add Members</button>
+            </div>
+
+            <!-- TAB 1: MEMBERS -->
+            <div id="membersPanel" class="card hidden">
+                <h3 class="card-title">👤 Create New Member</h3>
+                <div class="grid-2">
+                    <input type="text" id="new_name" placeholder="Full Name">
+                    <input type="text" id="new_number" placeholder="Phone Number">
+                    <input type="text" id="new_batch" placeholder="Batch (e.g., 2024)">
+                    <input type="text" id="new_clgid" placeholder="College ID">
+                </div>
+                <input type="email" id="new_email" placeholder="Email Address">
+                <div style="margin: 10px 0; border-top: 1px solid #eee; padding-top: 10px;">
+                    <label style="font-size:0.8rem; font-weight:bold; color:var(--primary);">LOGIN CREDENTIALS</label>
+                </div>
+                <div class="grid-2">
+                    <input type="text" id="new_username" placeholder="Username">
+                    <input type="text" id="new_password" placeholder="Password">
+                </div>
+                <button class="btn btn-primary" onclick="app.createMember()">Create Member Account</button>
+            </div>
+
+            <!-- TAB 2: STATS -->
+            <div id="statsPanel" class="card hidden">
+                <h3 class="card-title">🏆 Top Performers</h3>
+                <p style="color:#666; font-size:0.9rem;">Based on tasks assigned and completed.</p>
+                <div id="statsContent">Loading...</div>
+            </div>
+
+            <!-- TAB 3: EVENTS (DEFAULT) -->
+            <div id="eventsPanel">
+                <!-- Create Event (Admin Only) -->
+                <div id="createEventBox" class="card hidden" style="border-left: 5px solid var(--primary);">
+                    <h3 class="card-title">📅 Create New Event</h3>
+                    <div class="grid-2">
+                        <input type="text" id="evt_name" placeholder="Event Name">
+                        <input type="date" id="evt_date">
+                    </div>
+                    <p style="font-size:0.9rem; font-weight:600;">Required Roles:</p>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label"><input type="checkbox" id="role_photo" checked> Photography</label>
+                        <label class="checkbox-label"><input type="checkbox" id="role_video" checked> Videography</label>
+                        <label class="checkbox-label"><input type="checkbox" id="role_reels"> Reels</label>
+                        <label class="checkbox-label"><input type="checkbox" id="role_graphic"> Graphic Design</label>
+                        <label class="checkbox-label"><input type="checkbox" id="role_caption"> Captioning</label>
+                        <label class="checkbox-label"><input type="checkbox" id="role_hosting"> Hosting</label>
+                    </div>
+                    <button class="btn btn-primary" onclick="app.publishEvent()">Publish Event</button>
+                </div>
+
+                <!-- Event List -->
+                <h3 style="margin: 30px 0 15px;">Events Feed</h3>
+                <div id="eventsFeed">
+                    <p style="text-align:center; color:#888;">Loading...</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <div id="editModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 style="margin-top:0;">Edit Event</h3>
+            <input type="hidden" id="edit_id">
+            <label style="font-size:0.8rem; font-weight:bold;">Event Name</label>
+            <input type="text" id="edit_name">
+            <label style="font-size:0.8rem; font-weight:bold;">Date</label>
+            <input type="date" id="edit_date">
+            
+            <p style="font-size:0.9rem; font-weight:600; margin-top:15px;">Manage Roles:</p>
+            <p style="font-size:0.8rem; color:#666;">Unchecking a role will remove the slot (and any assignee).</p>
+            <div class="checkbox-group" id="edit_roles_container">
+                <!-- Populated dynamically -->
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn btn-primary" onclick="app.saveEdit()">Save Changes</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('editModal').classList.add('hidden')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE & APP LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue, update, set, get, child, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3hGyyW5KY5pFw64FrYgAeOg8-nc8uifE",
+            authDomain: "apc-command-center.firebaseapp.com",
+            projectId: "apc-command-center",
+            storageBucket: "apc-command-center.firebasestorage.app",
+            messagingSenderId: "286472910953",
+            appId: "1:286472910953:web:e821f155fc3441a2ce4af8",
+            measurementId: "G-BWDEM20VB7"
+        };
+
+        const firebaseApp = initializeApp(firebaseConfig);
+        const db = getDatabase(firebaseApp);
+
+        // --- GLOBAL APP STATE ---
+        const state = {
+            user: null, 
+            events: {}, // Store events locally for stats/editing
+            rolesList: ['Photography', 'Videography', 'Reels', 'Graphic Design', 'Captioning', 'Hosting']
+        };
+
+        // --- APP CONTROLLER ---
+        window.app = {
+            
+            // 1. LOGIN
+            login: async () => {
+                const u = document.getElementById('loginUser').value.trim();
+                const p = document.getElementById('loginPass').value.trim();
+                const err = document.getElementById('loginError');
+
+                if(!u || !p) { err.innerText = "Please enter username and password"; return; }
+                err.innerText = "Checking...";
+
+                // ADMIN BACKDOOR
+                if (u === "Yasar C H" && p === "Yasar@2004") {
+                    state.user = { username: "Yasar C H", name: "Yasar C H", role: "admin", uid: "admin_master" };
+                    app.initDashboard();
+                    return;
+                }
+
+                // DATABASE CHECK
+                const dbRef = ref(db);
+                get(child(dbRef, `users`)).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const users = snapshot.val();
+                        let found = false;
+                        Object.keys(users).forEach(key => {
+                            if (users[key].username === u && users[key].password === p) {
+                                state.user = { ...users[key], uid: key };
+                                found = true;
+                            }
+                        });
+                        found ? app.initDashboard() : err.innerText = "Invalid credentials";
+                    } else {
+                        err.innerText = "No users found.";
+                    }
+                }).catch((error) => {
+                    err.innerText = "Connection error";
+                    console.error(error);
+                });
+            },
+
+            // 2. DASHBOARD
+            initDashboard: () => {
+                document.getElementById('loginView').classList.add('hidden');
+                document.getElementById('dashboardView').classList.remove('hidden');
+                document.getElementById('displayUserName').innerText = `${state.user.name}`;
+
+                if (state.user.role === 'admin') {
+                    document.getElementById('adminTabs').classList.remove('hidden');
+                    document.getElementById('createEventBox').classList.remove('hidden');
+                } else {
+                    document.getElementById('adminTabs').classList.add('hidden');
+                    document.getElementById('createEventBox').classList.add('hidden');
+                }
+                app.listenToEvents();
+            },
+
+            logout: () => location.reload(),
+
+            // 3. EVENT LOGIC
+            publishEvent: () => {
+                const name = document.getElementById('evt_name').value;
+                const date = document.getElementById('evt_date').value;
+                if (!name) return alert("Event Name Required");
+
+                const tasks = {};
+                const ids = ['role_photo', 'role_video', 'role_reels', 'role_graphic', 'role_caption', 'role_hosting'];
+                const names = state.rolesList;
+
+                ids.forEach((id, index) => {
+                    if (document.getElementById(id).checked) {
+                        tasks[names[index]] = { assignedTo: "", assignedName: "" };
+                    }
+                });
+
+                push(ref(db, 'events'), {
+                    name: name,
+                    date: date,
+                    tasks: tasks,
+                    createdAt: Date.now()
+                });
+                document.getElementById('evt_name').value = '';
+                alert("Event Published!");
+            },
+
+            listenToEvents: () => {
+                const feed = document.getElementById('eventsFeed');
+                onValue(ref(db, 'events'), (snapshot) => {
+                    feed.innerHTML = "";
+                    const data = snapshot.val();
+                    state.events = data || {}; // Save for stats
+                    
+                    if(!data) { feed.innerHTML = "<p style='text-align:center'>No events yet.</p>"; return; }
+
+                    const eventsArr = Object.entries(data).reverse();
+                    
+                    eventsArr.forEach(([eventId, event]) => {
+                        let tasksHtml = "";
+                        
+                        // Sort out past events visually
+                        const isPast = event.date && new Date(event.date) < new Date(new Date().setHours(0,0,0,0));
+                        const pastClass = isPast ? 'past-event' : '';
+                        const badge = isPast ? '<span class="past-badge">Past</span>' : '';
+
+                        // Render Tasks
+                        if(event.tasks) {
+                            Object.entries(event.tasks).forEach(([role, info]) => {
+                                const isTaken = info.assignedTo ? true : false;
+                                let btn = "";
+                                if (isTaken) {
+                                    btn = `<div class="assignee">✅ ${info.assignedName}</div>`;
+                                } else {
+                                    // Disable claiming if past event
+                                    if(isPast) btn = `<span style="color:#999; font-size:0.8rem;">Expired</span>`;
+                                    else btn = `<button class="btn btn-primary" style="padding:5px 10px; font-size:0.8rem;" onclick="app.claim('${eventId}', '${role}')">Claim</button>`;
+                                }
+
+                                tasksHtml += `
+                                    <div class="task-row ${isTaken ? 'taken' : ''}">
+                                        <div class="role-badge">${role}</div>
+                                        ${btn}
+                                    </div>
+                                `;
+                            });
+                        }
+
+                        // Admin Controls
+                        let adminControls = "";
+                        if(state.user.role === 'admin') {
+                            adminControls = `
+                                <div style="margin-top:10px; padding-top:10px; border-top:1px solid #eee; display:flex; gap:10px;">
+                                    <button class="btn btn-outline btn-action" onclick="app.openEdit('${eventId}')">✏️ Edit</button>
+                                    <button class="btn btn-outline btn-action" onclick="app.generateReport('${eventId}')">📋 Copy Report</button>
+                                </div>
+                            `;
+                        }
+
+                        const card = `
+                            <div class="card ${pastClass}">
+                                <div class="event-header">
+                                    <div>
+                                        ${badge}
+                                        <h3 style="margin:0; display:inline-block; vertical-align:middle;">${event.name}</h3>
+                                        <div style="margin-top:5px;">
+                                            <span class="event-date">${event.date || 'TBD'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>${tasksHtml}</div>
+                                ${adminControls}
+                            </div>
+                        `;
+                        feed.innerHTML += card;
+                    });
+                });
+            },
+
+            claim: (eventId, role) => {
+                if(!confirm(`Confirm: You are taking the ${role} role?`)) return;
+                update(ref(db, `events/${eventId}/tasks/${role}`), {
+                    assignedTo: state.user.uid,
+                    assignedName: state.user.name
+                });
+            },
+
+            // 4. STATS LOGIC
+            calculateStats: () => {
+                const counts = {};
+                // Iterate all events
+                Object.values(state.events).forEach(evt => {
+                    if(evt.tasks) {
+                        Object.values(evt.tasks).forEach(task => {
+                            if(task.assignedName) {
+                                counts[task.assignedName] = (counts[task.assignedName] || 0) + 1;
+                            }
+                        });
+                    }
+                });
+
+                // Convert to array and sort
+                const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+                
+                let html = `<table class="stats-table"><tr><th>Rank</th><th>Member</th><th>Events Covered</th></tr>`;
+                sorted.forEach((item, index) => {
+                    let rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
+                    html += `
+                        <tr>
+                            <td><div class="stats-rank ${rankClass}">${index+1}</div></td>
+                            <td>${item[0]}</td>
+                            <td>${item[1]}</td>
+                        </tr>`;
+                });
+                html += "</table>";
+                
+                if(sorted.length === 0) html = "<p>No data yet.</p>";
+                document.getElementById('statsContent').innerHTML = html;
+            },
+
+            // 5. REPORT GENERATOR
+            generateReport: (eventId) => {
+                const evt = state.events[eventId];
+                let text = `*Event Report: ${evt.name}*\n📅 Date: ${evt.date}\n\n*Assignments:*`;
+                
+                if(evt.tasks) {
+                    Object.entries(evt.tasks).forEach(([role, info]) => {
+                        const status = info.assignedName ? `✅ ${info.assignedName}` : `🛑 [Open Slot]`;
+                        text += `\n${role}: ${status}`;
+                    });
+                }
+                
+                text += `\n\nGenerated by APC Dashboard`;
+                
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("Report copied to clipboard! Paste it in WhatsApp.");
+                });
+            },
+
+            // 6. EDIT MODAL LOGIC
+            openEdit: (eventId) => {
+                const evt = state.events[eventId];
+                document.getElementById('edit_id').value = eventId;
+                document.getElementById('edit_name').value = evt.name;
+                document.getElementById('edit_date').value = evt.date;
+
+                const container = document.getElementById('edit_roles_container');
+                container.innerHTML = "";
+                
+                state.rolesList.forEach(role => {
+                    // Check if role exists in current event
+                    const exists = evt.tasks && evt.tasks[role];
+                    const isChecked = exists ? 'checked' : '';
+                    const extra = exists && exists.assignedName ? `(Assigned: ${exists.assignedName})` : '';
+                    
+                    container.innerHTML += `
+                        <label class="checkbox-label">
+                            <input type="checkbox" class="edit-role-check" value="${role}" ${isChecked}>
+                            ${role} <span style="font-size:0.7em; color:#666; margin-left:5px;">${extra}</span>
+                        </label>
+                    `;
+                });
+
+                document.getElementById('editModal').classList.remove('hidden');
+            },
+
+            saveEdit: () => {
+                const id = document.getElementById('edit_id').value;
+                const newName = document.getElementById('edit_name').value;
+                const newDate = document.getElementById('edit_date').value;
+                
+                // Get existing tasks to preserve assignees if role is kept
+                const existingTasks = state.events[id].tasks || {};
+                const newTasks = {};
+
+                document.querySelectorAll('.edit-role-check').forEach(box => {
+                    if(box.checked) {
+                        const role = box.value;
+                        if(existingTasks[role]) {
+                            // Keep existing data (assignee)
+                            newTasks[role] = existingTasks[role];
+                        } else {
+                            // Create new empty slot
+                            newTasks[role] = { assignedTo: "", assignedName: "" };
+                        }
+                    }
+                });
+
+                update(ref(db, `events/${id}`), {
+                    name: newName,
+                    date: newDate,
+                    tasks: newTasks
+                }).then(() => {
+                    document.getElementById('editModal').classList.add('hidden');
+                    alert("Event updated!");
+                });
+            },
+
+            // 7. MEMBER CREATION
+            createMember: () => {
+                const data = {
+                    name: document.getElementById('new_name').value,
+                    number: document.getElementById('new_number').value,
+                    batch: document.getElementById('new_batch').value,
+                    clgId: document.getElementById('new_clgid').value,
+                    email: document.getElementById('new_email').value,
+                    username: document.getElementById('new_username').value,
+                    password: document.getElementById('new_password').value,
+                    role: "member",
+                    createdAt: Date.now()
+                };
+                if(!data.username) return alert("Username required");
+                push(ref(db, 'users'), data).then(() => {
+                    alert("Member created!");
+                    document.querySelectorAll('#membersPanel input').forEach(i => i.value = '');
+                });
+            },
+
+            // UI TABS
+            switchTab: (tabName) => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector(`.tab-btn[data-tab="${tabName}"]`).classList.add('active');
+                
+                ['events', 'stats', 'members'].forEach(t => {
+                    const el = document.getElementById(`${t}Panel`);
+                    if(t === tabName) el.classList.remove('hidden');
+                    else el.classList.add('hidden');
+                });
+
+                if(tabName === 'stats') app.calculateStats();
+            }
+        };
+    </script>
+</body>
+</html>
