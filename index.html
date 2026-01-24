@@ -433,6 +433,25 @@
             allUsers: [], filterMyTasks: false
         };
 
+        // --- HELPER: COPY TO CLIPBOARD (Robust fallback) ---
+        const copyToClipboard = (text) => {
+            if (navigator.clipboard && window.isSecureContext) {
+                return navigator.clipboard.writeText(text);
+            } else {
+                let textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-9999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                return new Promise((res, rej) => {
+                    document.execCommand('copy') ? res() : rej();
+                    textArea.remove();
+                });
+            }
+        };
+
         window.app = {
             init: () => {
                 const container = document.getElementById('roleCreatorList');
@@ -818,35 +837,38 @@
                 let text = `*Event Report: ${evt.name}*\n📅 ${evt.date}\n${evt.notes ? `📝 ${evt.notes}\n` : ''}\n*Assignments:*`;
                 if(evt.tasks) Object.entries(evt.tasks).forEach(([role, info]) => text += `\n${role}: ${info.assignedName ? '✅ '+info.assignedName : '🛑 Open'}`);
                 text += `\n\n- APC Dashboard`;
-                navigator.clipboard.writeText(text).then(() => alert("Copied!"));
+                copyToClipboard(text).then(() => alert("Copied to clipboard!")).catch(() => alert("Failed to copy."));
             },
             downloadPDF: (eid) => {
-                const evt = state.events[eid];
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAbFBMVEUAAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD///+m04iZAAAAI3RSTlMAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMv5rMAAAABYktHRACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gEZFBAe859Y0QAAAMRJREFUSMft1MsKwkAMhOGZqK14a7W1Vavv/4Y2uC6C4sCE/Z/Ci5MZhgH/jC5w1Xpzp/a1o/S1S68ta147S187S1+79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69v/4A/o6F45892YfAAAAAElFTkSuQmCC";
-                try { doc.addImage(logoBase64, 'PNG', 10, 10, 15, 15); } catch(e) {}
-                doc.setFillColor(255, 87, 34); doc.rect(0, 0, 210, 5, 'F');
-                doc.setFontSize(22); doc.setFont("helvetica", "bold"); doc.text("APC EVENT REPORT", 30, 22);
-                doc.setLineWidth(0.5); doc.line(10, 30, 200, 30);
-                doc.setFontSize(14); doc.text(`Event: ${evt.name}`, 10, 40);
-                doc.setFontSize(11); doc.setFont("helvetica", "normal");
-                doc.text(`Date: ${evt.date || 'TBD'}`, 10, 47); doc.text(`Status: ${evt.status || 'Active'}`, 10, 53);
-                let startY = 62;
-                if(evt.notes) {
-                    doc.setFontSize(10); doc.setTextColor(50); doc.setFont("helvetica", "italic");
-                    const splitNotes = doc.splitTextToSize(`Notes: ${evt.notes}`, 180);
-                    doc.text(splitNotes, 10, startY); startY += (splitNotes.length * 5) + 5;
-                }
-                const rows = [];
-                if(evt.tasks) Object.keys(evt.tasks).sort().forEach(role => rows.push([role, evt.tasks[role].assignedName || "--- Open ---", evt.tasks[role].assignedName ? "Assigned" : "Pending"]));
-                doc.autoTable({ startY, head: [['Role', 'Member', 'Status']], body: rows, theme: 'striped', headStyles: { fillColor: [255, 87, 34] }, styles: { fontSize: 10 } });
-                
-                const sigY = doc.internal.pageSize.height - 30;
-                doc.setLineWidth(0.5); doc.line(130, sigY, 190, sigY);
-                doc.setFontSize(10); doc.setTextColor(0); doc.text("President's Signature", 140, sigY + 5);
-                doc.setFontSize(9); doc.setTextColor(100); doc.text(`Generated: ${new Date().toLocaleDateString()}`, 10, sigY + 5);
-                doc.save(`APC_Report.pdf`);
+                try {
+                    if (!window.jspdf) { alert("PDF Library not loaded."); return; }
+                    const evt = state.events[eid];
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAbFBMVEUAAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD///+m04iZAAAAI3RSTlMAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMv5rMAAAABYktHRACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gEZFBAe859Y0QAAAMRJREFUSMft1MsKwkAMhOGZqK14a7W1Vavv/4Y2uC6C4sCE/Z/Ci5MZhgH/jC5w1Xpzp/a1o/S1S68ta147S187S1+79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69v/4A/o6F45892YfAAAAAElFTkSuQmCC";
+                    try { doc.addImage(logoBase64, 'PNG', 10, 10, 15, 15); } catch(e) {}
+                    doc.setFillColor(255, 87, 34); doc.rect(0, 0, 210, 5, 'F');
+                    doc.setTextColor(0, 0, 0); doc.setFontSize(22); doc.setFont("helvetica", "bold"); doc.text("APC EVENT REPORT", 30, 22);
+                    doc.setLineWidth(0.5); doc.line(10, 30, 200, 30);
+                    doc.setFontSize(14); doc.text(`Event: ${evt.name}`, 10, 40);
+                    doc.setFontSize(11); doc.setFont("helvetica", "normal");
+                    doc.text(`Date: ${evt.date || 'TBD'}`, 10, 47); doc.text(`Status: ${evt.status || 'Active'}`, 10, 53);
+                    let startY = 62;
+                    if(evt.notes) {
+                        doc.setFontSize(10); doc.setTextColor(50); doc.setFont("helvetica", "italic");
+                        const splitNotes = doc.splitTextToSize(`Notes: ${evt.notes}`, 180);
+                        doc.text(splitNotes, 10, startY); startY += (splitNotes.length * 5) + 5;
+                    }
+                    const rows = [];
+                    if(evt.tasks) Object.keys(evt.tasks).sort().forEach(role => rows.push([role, evt.tasks[role].assignedName || "--- Open ---", evt.tasks[role].assignedName ? "Assigned" : "Pending"]));
+                    doc.autoTable({ startY, head: [['Role', 'Member', 'Status']], body: rows, theme: 'striped', headStyles: { fillColor: [255, 87, 34] }, styles: { fontSize: 10 } });
+                    
+                    const sigY = doc.internal.pageSize.height - 30;
+                    doc.setLineWidth(0.5); doc.line(130, sigY, 190, sigY);
+                    doc.setFontSize(10); doc.setTextColor(0); doc.text("President's Signature", 140, sigY + 5);
+                    doc.setFontSize(9); doc.setTextColor(100); doc.text(`Generated: ${new Date().toLocaleDateString()}`, 10, sigY + 5);
+                    doc.save(`APC_Report.pdf`);
+                } catch(e) { alert("PDF Error: " + e.message); }
             },
 
             // EDIT EVENT
@@ -883,6 +905,7 @@
             },
             saveEdit: () => {
                 const id = document.getElementById('edit_id').value;
+                if(!state.events[id]) return; // Safety check
                 const tasks = {};
                 // Preserve old data if role exists
                 const oldTasks = state.events[id].tasks || {};
@@ -895,7 +918,10 @@
                     notes: document.getElementById('edit_notes').value,
                     driveLink: document.getElementById('edit_drive').value,
                     tasks: tasks
-                }).then(() => { document.getElementById('editModal').classList.add('hidden'); alert("Updated!"); });
+                }).then(() => { 
+                    document.getElementById('editModal').classList.add('hidden'); 
+                    alert("Updated!"); 
+                }).catch(e => alert("Error saving: " + e.message));
             },
 
             // MEMBER EDIT
