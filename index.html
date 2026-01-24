@@ -36,7 +36,7 @@
         .hidden { display: none !important; }
         .btn {
             border: none;
-            padding: 8px 16px;
+            padding: 10px 16px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
@@ -44,6 +44,7 @@
             font-size: 0.9rem;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 5px;
         }
         .btn-primary { background: var(--primary); color: white; }
@@ -54,7 +55,7 @@
         .btn-drive { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
         .btn-drive:hover { background: #c8e6c9; }
         .btn-action { padding: 4px 8px; font-size: 0.8rem; }
-        .btn-icon { background: none; border: none; cursor: pointer; padding: 2px 5px; font-size: 0.8rem; opacity: 0.6; transition: 0.2s; }
+        .btn-icon { background: none; border: none; cursor: pointer; padding: 2px 5px; font-size: 0.9rem; opacity: 0.6; transition: 0.2s; }
         .btn-icon:hover { opacity: 1; transform: scale(1.1); }
 
         input, select, textarea {
@@ -71,197 +72,75 @@
         input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); border-color: transparent; }
         textarea { resize: vertical; min-height: 60px; }
         
-        /* Admin Specific Select */
-        .admin-select {
-            padding: 6px 10px;
-            font-size: 0.85rem;
-            margin-bottom: 0;
-            border: 1px solid #ddd;
-            width: auto;
-            min-width: 150px;
-        }
-
-        /* Header Status Select */
-        .status-select {
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            border: 1px solid #ccc;
-            margin-right: 10px;
-            background: white;
-            width: auto;
-            margin-bottom: 0;
-            cursor: pointer;
-        }
+        .admin-select { padding: 6px 10px; font-size: 0.85rem; margin-bottom: 0; border: 1px solid #ddd; width: auto; min-width: 150px; }
+        .status-select { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; border: 1px solid #ccc; margin-right: 10px; background: white; width: auto; margin-bottom: 0; cursor: pointer; }
 
         /* Notice Board */
         .notice-board {
-            background: #fff3cd;
-            color: #856404;
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #ffeeba;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            animation: fadeIn 0.5s;
+            background: #fff3cd; color: #856404; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ffeeba;
+            display: flex; justify-content: space-between; align-items: center; animation: fadeIn 0.5s;
         }
-        .notice-content { font-weight: 500; display: flex; align-items: center; gap: 10px; }
-        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Inventory & Resource Items */
-        .inv-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            background: white;
-        }
-        .inv-status-avail { color: var(--success); font-weight: bold; font-size: 0.85rem; background: #e8f5e9; padding: 2px 8px; border-radius: 4px; }
-        .inv-status-out { color: #d32f2f; font-weight: bold; font-size: 0.85rem; background: #ffebee; padding: 2px 8px; border-radius: 4px; }
-
+        /* Items */
+        .inv-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; background: white; }
         .resource-link { color: var(--primary); text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 5px; }
         .resource-link:hover { text-decoration: underline; }
 
-        /* --- LOGIN PAGE --- */
+        /* --- AUTH PAGES --- */
         .login-container {
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #FF5722 0%, #FF8A65 100%);
+            min-height: 100vh; display: flex; justify-content: center; align-items: center;
+            background: linear-gradient(135deg, #FF5722 0%, #FF8A65 100%); padding: 20px;
         }
         .login-card {
-            background: white;
-            padding: 40px;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
+            background: white; padding: 40px; border-radius: 16px; width: 100%; max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center;
         }
         .login-logo {
-            width: 80px;
-            height: 80px;
-            background: white;
-            border-radius: 50%;
-            margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border: 4px solid rgba(255,255,255,0.3);
+            width: 80px; height: 80px; background: white; border-radius: 50%; margin: 0 auto 20px;
+            display: flex; align-items: center; justify-content: center; overflow: hidden; border: 4px solid rgba(255,255,255,0.3);
         }
         .login-logo img { width: 100%; height: 100%; object-fit: cover; }
 
         /* --- APP LAYOUT --- */
         header {
-            background-color: white;
-            padding: 0.8rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            background-color: white; padding: 0.8rem 2rem; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100;
         }
         .brand { font-weight: 800; font-size: 1.4rem; color: var(--primary); display: flex; align-items: center; gap: 10px; }
         .brand img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        
         .user-info { display: flex; align-items: center; gap: 5px; font-size: 0.9rem; font-weight: 500; }
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; padding-bottom: 50px; }
 
-        .container {
-            max-width: 900px;
-            margin: 30px auto;
-            padding: 0 20px;
-            padding-bottom: 50px;
-        }
-
-        /* --- TABS (ADMIN) --- */
+        /* --- TABS --- */
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
         .tab-btn {
-            background: white;
-            border: 1px solid var(--border);
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--text-muted);
-            white-space: nowrap;
+            background: white; border: 1px solid var(--border); padding: 10px 20px; border-radius: 20px;
+            cursor: pointer; font-weight: 600; color: var(--text-muted); white-space: nowrap;
         }
-        .tab-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* --- FORMS & CARDS --- */
-        .card {
-            background: white;
-            border-radius: var(--radius);
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            position: relative;
-        }
-        .card.past-event {
-            opacity: 0.8;
-            background: #fafafa;
-            border-left: 5px solid #ccc;
-        }
+        /* --- CARDS & LISTS --- */
+        .card { background: white; border-radius: var(--radius); padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); position: relative; }
+        .card.past-event { opacity: 0.8; background: #fafafa; border-left: 5px solid #ccc; }
         .card-title { margin-top: 0; color: var(--text-main); font-size: 1.2rem; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
-        /* --- TASK LIST --- */
         .event-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         .event-date { background: #eee; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; display: inline-block; }
         .past-badge { background: #ffebee; color: #c62828; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-right: 5px; }
         .completed-badge { background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-right: 5px; }
-        
-        .event-notes {
-            background: #fff8e1;
-            border-left: 4px solid #ffc107;
-            padding: 10px;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-            color: #5d4037;
-        }
+        .event-notes { background: #fff8e1; border-left: 4px solid #ffc107; padding: 10px; margin-bottom: 15px; font-size: 0.9rem; color: #5d4037; }
 
-        .task-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            border: 1px solid transparent;
-        }
+        .task-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 8px; border: 1px solid transparent; }
         .task-row.taken { background: white; border-color: #e0e0e0; }
-        
         .role-badge { font-weight: 700; font-size: 0.9rem; color: #444; }
         .assignee { font-size: 0.85rem; color: var(--success); font-weight: 600; display: flex; align-items: center; gap: 5px; }
         
-        /* Checkbox Grid with Quantities */
-        .role-selector {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #f9f9f9;
-            padding: 8px 12px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            border: 1px solid #eee;
-        }
+        .role-selector { display: flex; align-items: center; justify-content: space-between; background: #f9f9f9; padding: 8px 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #eee; }
         .role-selector label { font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 8px; cursor: pointer; flex-grow: 1; }
         .qty-input { width: 60px; padding: 5px; margin: 0; text-align: center; font-weight: bold; height: auto; border: 1px solid #ddd; }
 
-        /* Stats Table */
         .stats-table { width: 100%; border-collapse: collapse; }
         .stats-table th { text-align: left; padding: 10px; background: #eee; border-radius: 6px; font-size: 0.9rem; }
         .stats-table td { padding: 10px; border-bottom: 1px solid #eee; font-weight: 500; }
@@ -270,54 +149,14 @@
         .rank-2 { background: silver; color: #333; }
         .rank-3 { background: #CD7F32; }
 
-        /* Modal */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 1000;
-            display: flex; justify-content: center; align-items: center;
-        }
-        .modal-content {
-            background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px;
-            max-height: 90vh; overflow-y: auto;
-        }
+        /* Modal & Overlay */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
         
-        /* Section Divider */
-        .section-divider {
-            display: flex; 
-            align-items: center; 
-            margin: 40px 0 20px; 
-            color: var(--text-muted);
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-        .section-divider::before, .section-divider::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-            margin: 0 15px;
-        }
+        .section-divider { display: flex; align-items: center; margin: 40px 0 20px; color: var(--text-muted); font-weight: 700; font-size: 1.1rem; }
+        .section-divider::before, .section-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); margin: 0 15px; }
 
-        /* Filter Toggle */
-        .filter-bar {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            margin-bottom: 10px;
-        }
-        .filter-toggle {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            background: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            border: 1px solid #ddd;
-            user-select: none;
-        }
-        .filter-toggle input { width: auto; margin: 0; }
+        .filter-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer; background: white; padding: 8px 12px; border-radius: 20px; border: 1px solid #ddd; user-select: none; }
         .filter-toggle:hover { background: #f9f9f9; }
 
     </style>
@@ -330,18 +169,49 @@
             <div class="login-logo">
                 <img src="https://cdn-icons-png.flaticon.com/512/3176/3176371.png" alt="Logo">
             </div>
-            <h2 style="margin-top:0;">Welcome Back</h2>
-            <p style="color:var(--text-muted); margin-bottom:20px;">Sign in to APC Dashboard</p>
+            <h2 style="margin-top:0;">APC Command Center</h2>
+            <p style="color:var(--text-muted); margin-bottom:20px;">President & Member Login</p>
             
             <input type="text" id="loginUser" placeholder="Username" value="">
             <input type="password" id="loginPass" placeholder="Password" value="">
             
-            <button class="btn btn-primary" onclick="app.login()" style="width:100%;">Login</button>
-            <p id="loginError" style="color:red; font-size:0.9rem; margin-top:10px;"></p>
+            <button class="btn btn-primary" style="width:100%; margin-bottom:10px;" onclick="app.login()">Login</button>
+            <button class="btn btn-outline" style="width:100%;" onclick="app.toggleSignup(true)">New Member? Register</button>
+            
+            <p id="loginError" style="color:red; font-size:0.9rem; margin-top:15px;"></p>
         </div>
     </div>
 
-    <!-- === VIEW 2: MAIN DASHBOARD === -->
+    <!-- === VIEW 2: SIGNUP PAGE === -->
+    <div id="signupView" class="login-container hidden">
+        <div class="login-card" style="max-width: 500px;">
+            <h2 style="margin-top:0;">📝 Member Registration</h2>
+            <p style="color:var(--text-muted);">Fill details to request access.</p>
+            
+            <div class="grid-2">
+                <input type="text" id="reg_name" placeholder="Full Name">
+                <input type="text" id="reg_batch" placeholder="Batch (e.g. 2024)">
+            </div>
+            <div class="grid-2">
+                <input type="text" id="reg_phone" placeholder="Phone Number">
+                <input type="text" id="reg_clgid" placeholder="College ID">
+            </div>
+            <input type="email" id="reg_email" placeholder="Email Address">
+            
+            <div style="border-top:1px solid #eee; margin:15px 0; padding-top:10px;">
+                <label style="font-size:0.8rem; font-weight:bold; display:block; margin-bottom:5px;">Create Login</label>
+                <div class="grid-2">
+                    <input type="text" id="reg_user" placeholder="Username">
+                    <input type="password" id="reg_pass" placeholder="Password">
+                </div>
+            </div>
+
+            <button class="btn btn-primary" style="width:100%; margin-bottom:10px;" onclick="app.register()">Submit Request</button>
+            <button class="btn btn-secondary" style="width:100%;" onclick="app.toggleSignup(false)">Back to Login</button>
+        </div>
+    </div>
+
+    <!-- === VIEW 3: MAIN DASHBOARD === -->
     <div id="dashboardView" class="hidden">
         <header>
             <div class="brand">
@@ -349,13 +219,11 @@
                 APC Club
             </div>
             <div class="user-info">
-                <!-- Status Selector -->
                 <select id="userStatus" class="status-select" onchange="app.updateStatus(this.value)">
                     <option value="Available">🟢 Available</option>
                     <option value="Busy">🔴 Busy / Exams</option>
                     <option value="Not in Clg">⛔ Not in Clg</option>
                 </select>
-                
                 <span id="displayUserName" style="margin-right:10px;">User</span>
                 <button class="btn btn-danger" onclick="app.logout()" style="padding: 5px 12px; font-size:0.8rem;">Logout</button>
             </div>
@@ -375,20 +243,27 @@
             <div id="tabsContainer" class="tabs">
                 <button class="tab-btn active" data-tab="events" onclick="app.switchTab('events')">Manage Events</button>
                 <button class="tab-btn" data-tab="resources" onclick="app.switchTab('resources')">📂 Resources</button>
-                
-                <!-- Admin Only Tabs -->
                 <button class="tab-btn admin-only hidden" data-tab="stats" onclick="app.switchTab('stats')">🏆 Stats</button>
                 <button class="tab-btn admin-only hidden" data-tab="inventory" onclick="app.switchTab('inventory')">📦 Inventory</button>
                 <button class="tab-btn admin-only hidden" data-tab="members" onclick="app.switchTab('members')">Members</button>
             </div>
 
-            <!-- TAB 1: MEMBERS -->
+            <!-- TAB 1: MEMBERS (ADMIN) -->
             <div id="membersPanel" class="card hidden">
-                <h3 class="card-title">👤 Create New Member</h3>
+                
+                <!-- PENDING SECTION -->
+                <div id="pendingSection" class="hidden" style="background:#fff3e0; border:1px solid #ffe0b2; padding:15px; border-radius:10px; margin-bottom:25px;">
+                    <h3 style="margin-top:0; color:#e65100; display:flex; align-items:center; gap:8px;">🔔 Pending Approvals</h3>
+                    <div id="pendingList">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+                <h3 class="card-title">👤 Add Member Manually</h3>
                 <div class="grid-2">
                     <input type="text" id="new_name" placeholder="Full Name">
                     <input type="text" id="new_number" placeholder="Phone Number">
-                    <input type="text" id="new_batch" placeholder="Batch (e.g., 2024)">
+                    <input type="text" id="new_batch" placeholder="Batch">
                     <input type="text" id="new_clgid" placeholder="College ID">
                 </div>
                 <input type="email" id="new_email" placeholder="Email Address">
@@ -401,19 +276,16 @@
                 </div>
                 <button class="btn btn-primary" onclick="app.createMember()">Create Member Account</button>
 
-                <!-- NEW MEMBER DIRECTORY -->
+                <!-- DIRECTORY -->
                 <div style="margin-top: 40px; border-top: 2px solid #eee; padding-top: 20px;">
                     <h3 style="margin-top:0; color:var(--text-main);">👥 Member Directory</h3>
-                    <div id="membersList" style="margin-top:15px;">
-                        <p>Loading members...</p>
-                    </div>
+                    <div id="membersList" style="margin-top:15px;">Loading members...</div>
                 </div>
             </div>
 
             <!-- TAB 2: STATS -->
             <div id="statsPanel" class="card hidden">
                 <h3 class="card-title">🏆 Top Performers</h3>
-                <p style="color:#666; font-size:0.9rem;">Based on tasks assigned and completed.</p>
                 <div id="statsContent">Loading...</div>
             </div>
 
@@ -424,9 +296,7 @@
                     <input type="text" id="inv_item_name" placeholder="Item Name (e.g. Sony A7III)" style="margin-bottom:0;">
                     <button class="btn btn-primary" onclick="app.addInventoryItem()">Add</button>
                 </div>
-                <div id="inventoryList">
-                    <p>Loading gear...</p>
-                </div>
+                <div id="inventoryList">Loading gear...</div>
             </div>
 
             <!-- TAB 4: RESOURCES -->
@@ -440,14 +310,11 @@
                     </div>
                     <button class="btn btn-primary" onclick="app.addResource()">Add Link</button>
                 </div>
-                <div id="resourcesList">
-                    <p>Loading resources...</p>
-                </div>
+                <div id="resourcesList">Loading resources...</div>
             </div>
 
             <!-- TAB 5: EVENTS (DEFAULT) -->
             <div id="eventsPanel">
-                <!-- Create Event (Admin Only) -->
                 <div id="createEventBox" class="card admin-only hidden" style="border-left: 5px solid var(--primary);">
                     <h3 class="card-title">📅 Create New Event</h3>
                     <div class="grid-2">
@@ -455,33 +322,18 @@
                         <input type="date" id="evt_date">
                     </div>
                     <textarea id="evt_notes" placeholder="Instructions / Notes (e.g. Dress Code, Meeting Time)"></textarea>
-                    
                     <p style="font-size:0.9rem; font-weight:600; margin-bottom:5px;">Select Roles & Quantities:</p>
-                    
-                    <div id="roleCreatorList">
-                        <!-- Populated via JS -->
-                    </div>
-
+                    <div id="roleCreatorList"></div>
                     <button class="btn btn-primary" onclick="app.publishEvent()" style="margin-top:15px;">Publish Event</button>
                 </div>
 
-                <!-- Upcoming Events List -->
                 <div style="display:flex; justify-content:space-between; align-items:center; margin: 30px 0 15px;">
                     <h3 style="margin:0;">🔥 Upcoming Events</h3>
-                    <label class="filter-toggle">
-                        <input type="checkbox" onchange="app.toggleMyTasks(this.checked)"> Show My Tasks Only
-                    </label>
+                    <label class="filter-toggle"><input type="checkbox" onchange="app.toggleMyTasks(this.checked)"> Show My Tasks Only</label>
                 </div>
-
-                <div id="eventsFeed">
-                    <p style="text-align:center; color:#888;">Loading...</p>
-                </div>
-
-                <!-- Past Events List -->
+                <div id="eventsFeed"><p style="text-align:center; color:#888;">Loading...</p></div>
                 <div class="section-divider">Past Events / History</div>
-                <div id="pastFeed">
-                    <p style="text-align:center; color:#888;">No history yet.</p>
-                </div>
+                <div id="pastFeed"><p style="text-align:center; color:#888;">No history yet.</p></div>
             </div>
 
         </div>
@@ -496,21 +348,21 @@
             <input type="text" id="edit_name">
             <label style="font-size:0.8rem; font-weight:bold;">Date</label>
             <input type="date" id="edit_date">
-
             <label style="font-size:0.8rem; font-weight:bold;">Instructions / Notes</label>
             <textarea id="edit_notes" placeholder="Notes..."></textarea>
-            
             <div style="margin-top:10px; background:#e8f5e9; padding:10px; border-radius:8px; border:1px solid #c8e6c9;">
                 <label style="font-size:0.8rem; font-weight:bold; color:#2e7d32;">📂 Google Drive / Photos Link</label>
-                <input type="text" id="edit_drive" placeholder="Paste link to upload photos..." style="margin-bottom:0;">
+                <input type="text" id="edit_drive" placeholder="Paste link..." style="margin-bottom:0;">
             </div>
-            
-            <p style="font-size:0.9rem; font-weight:600; margin-top:15px;">Manage Existing Slots:</p>
-            <p style="font-size:0.8rem; color:#666;">Unchecking a role will remove that specific slot.</p>
-            <div id="edit_roles_container">
-                <!-- Populated dynamically -->
+            <div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
+                <p style="font-size:0.9rem; font-weight:600; margin:0 0 10px;">Manage Slots:</p>
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <select id="add_role_select" style="margin-bottom:0; flex-grow:1;"></select>
+                    <button class="btn btn-primary btn-action" onclick="app.addRoleToEdit()">+ Add</button>
+                </div>
+                <div id="edit_roles_container" style="max-height:150px; overflow-y:auto; border:1px solid #eee; padding:10px; border-radius:8px;"></div>
+                <p style="font-size:0.8rem; color:#666; margin-top:5px;">Unchecking a role will remove that specific slot.</p>
             </div>
-            
             <div style="display:flex; justify-content:space-between; margin-top:20px;">
                 <div style="display:flex; gap:10px;">
                     <button class="btn btn-primary" onclick="app.saveEdit()">Save Changes</button>
@@ -521,14 +373,38 @@
         </div>
     </div>
 
+    <!-- EDIT MEMBER MODAL -->
+    <div id="editMemberModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 style="margin-top:0;">Edit Member Profile</h3>
+            <input type="hidden" id="mem_edit_uid">
+            <div class="grid-2">
+                <div><label style="font-size:0.8rem; font-weight:bold;">Name</label><input type="text" id="mem_edit_name"></div>
+                <div><label style="font-size:0.8rem; font-weight:bold;">Phone</label><input type="text" id="mem_edit_number"></div>
+                <div><label style="font-size:0.8rem; font-weight:bold;">Batch</label><input type="text" id="mem_edit_batch"></div>
+                <div><label style="font-size:0.8rem; font-weight:bold;">College ID</label><input type="text" id="mem_edit_clgid"></div>
+            </div>
+            <label style="font-size:0.8rem; font-weight:bold;">Email</label><input type="email" id="mem_edit_email">
+            <div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
+                <label style="font-size:0.8rem; font-weight:bold; color:var(--primary);">Login Credentials</label>
+                <div class="grid-2">
+                    <input type="text" id="mem_edit_username" placeholder="Username">
+                    <input type="text" id="mem_edit_password" placeholder="Password">
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn btn-primary" onclick="app.saveMemberEdit()">Update Member</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('editMemberModal').classList.add('hidden')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- HISTORY MODAL -->
     <div id="historyModal" class="modal-overlay hidden">
         <div class="modal-content">
             <h3 style="margin-top:0;">📜 Equipment History</h3>
             <h4 id="historyItemName" style="color:var(--primary); margin-top:0;"></h4>
-            <div id="historyList" style="max-height:300px; overflow-y:auto; margin-top:15px;">
-                Loading...
-            </div>
+            <div id="historyList" style="max-height:300px; overflow-y:auto; margin-top:15px;">Loading...</div>
             <button class="btn btn-secondary" style="margin-top:20px; width:100%;" onclick="document.getElementById('historyModal').classList.add('hidden')">Close</button>
         </div>
     </div>
@@ -538,7 +414,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, onValue, update, set, get, child, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyA3hGyyW5KY5pFw64FrYgAeOg8-nc8uifE",
             authDomain: "apc-command-center.firebaseapp.com",
@@ -552,30 +427,53 @@
         const firebaseApp = initializeApp(firebaseConfig);
         const db = getDatabase(firebaseApp);
 
-        // --- GLOBAL APP STATE ---
         const state = {
-            user: null, 
-            events: {}, 
+            user: null, events: {}, 
             rolesList: ['Photography', 'Videography', 'Reels', 'Graphic Design', 'Captioning', 'Hosting'],
-            allUsers: [],
-            filterMyTasks: false
+            allUsers: [], filterMyTasks: false
         };
 
-        // --- APP CONTROLLER ---
         window.app = {
-            
-            // 1. INIT & LOGIN
             init: () => {
                 const container = document.getElementById('roleCreatorList');
                 state.rolesList.forEach((role, i) => {
-                    const id = `new_role_${i}`;
                     container.innerHTML += `
                         <div class="role-selector">
-                            <label><input type="checkbox" id="chk_${id}" ${i<2 ? 'checked' : ''}> ${role}</label>
-                            <input type="number" id="qty_${id}" class="qty-input" value="1" min="1">
-                        </div>
-                    `;
+                            <label><input type="checkbox" id="chk_new_role_${i}" ${i<2 ? 'checked' : ''}> ${role}</label>
+                            <input type="number" id="qty_new_role_${i}" class="qty-input" value="1" min="1">
+                        </div>`;
                 });
+            },
+
+            // --- AUTH SYSTEM ---
+            toggleSignup: (show) => {
+                const loginV = document.getElementById('loginView');
+                const signupV = document.getElementById('signupView');
+                if(show) { loginV.classList.add('hidden'); signupV.classList.remove('hidden'); }
+                else { loginV.classList.remove('hidden'); signupV.classList.add('hidden'); }
+            },
+
+            register: () => {
+                const data = {
+                    name: document.getElementById('reg_name').value,
+                    batch: document.getElementById('reg_batch').value,
+                    number: document.getElementById('reg_phone').value,
+                    clgid: document.getElementById('reg_clgid').value,
+                    email: document.getElementById('reg_email').value,
+                    username: document.getElementById('reg_user').value,
+                    password: document.getElementById('reg_pass').value,
+                    createdAt: Date.now()
+                };
+
+                if(!data.name || !data.username || !data.password) { alert("Please fill Name, Username and Password."); return; }
+
+                // Check pending first
+                push(ref(db, 'pending_users'), data).then(() => {
+                    alert("Registration Submitted! Please ask the President to approve your account.");
+                    app.toggleSignup(false);
+                    // Clear inputs
+                    document.querySelectorAll('#signupView input').forEach(i => i.value = '');
+                }).catch(err => alert("Error: " + err.message));
             },
 
             login: async () => {
@@ -594,6 +492,22 @@
                     return;
                 }
 
+                // CHECK PENDING FIRST
+                const pendingRef = ref(db, 'pending_users');
+                const pendingSnap = await get(pendingRef);
+                let isPending = false;
+                if(pendingSnap.exists()) {
+                    Object.values(pendingSnap.val()).forEach(usr => {
+                        if(usr.username === u && usr.password === p) isPending = true;
+                    });
+                }
+
+                if(isPending) {
+                    err.innerText = "⚠️ Account pending approval by President.";
+                    return;
+                }
+
+                // CHECK ACTIVE USERS
                 const dbRef = ref(db);
                 get(child(dbRef, `users`)).then((snapshot) => {
                     if (snapshot.exists()) {
@@ -613,7 +527,7 @@
                             err.innerText = "Invalid credentials";
                         }
                     } else {
-                        err.innerText = "No users found.";
+                        err.innerText = "User not found.";
                     }
                 }).catch((error) => {
                     err.innerText = "Connection error";
@@ -622,8 +536,7 @@
             },
 
             loadAllUsersForAdmin: async () => {
-                const dbRef = ref(db);
-                // We use onValue here so Admin sees real-time status updates from users
+                // Listen to USERS for assignments
                 onValue(ref(db, 'users'), (snapshot) => {
                     state.allUsers = [];
                     if (snapshot.exists()) {
@@ -635,70 +548,101 @@
                             });
                         });
                     }
-                    // Refresh events to show new status in dropdowns if events are loaded
                     if(state.events) app.renderEvents(state.events);
                 });
+
+                // Listen to PENDING users for approvals
+                onValue(ref(db, 'pending_users'), (snapshot) => {
+                    const list = document.getElementById('pendingList');
+                    const section = document.getElementById('pendingSection');
+                    const data = snapshot.val();
+
+                    if(data) {
+                        section.classList.remove('hidden');
+                        let html = `<table class="stats-table"><tr><th>Name</th><th>Batch</th><th>Actions</th></tr>`;
+                        Object.entries(data).forEach(([key, user]) => {
+                            html += `<tr>
+                                <td>${user.name} (${user.username})</td>
+                                <td>${user.batch}</td>
+                                <td>
+                                    <button class="btn btn-primary btn-action" onclick="app.approveMember('${key}')">✅ Approve</button>
+                                    <button class="btn btn-danger btn-action" onclick="app.rejectMember('${key}')">❌ Reject</button>
+                                </td>
+                            </tr>`;
+                        });
+                        html += `</table>`;
+                        list.innerHTML = html;
+                    } else {
+                        section.classList.add('hidden');
+                        list.innerHTML = "";
+                    }
+                });
+            },
+
+            approveMember: async (key) => {
+                // Get data
+                const snap = await get(ref(db, `pending_users/${key}`));
+                if(!snap.exists()) return;
+                const data = snap.val();
+                
+                // Add fields
+                data.role = 'member';
+                data.status = 'Available';
+                
+                // Push to users
+                push(ref(db, 'users'), data).then(() => {
+                    // Remove from pending
+                    remove(ref(db, `pending_users/${key}`));
+                    alert(`Approved ${data.name}!`);
+                });
+            },
+
+            rejectMember: (key) => {
+                if(confirm("Reject this registration request?")) {
+                    remove(ref(db, `pending_users/${key}`));
+                }
             },
 
             initDashboard: () => {
                 document.getElementById('loginView').classList.add('hidden');
                 document.getElementById('dashboardView').classList.remove('hidden');
                 document.getElementById('displayUserName').innerText = `${state.user.name}`;
-                
-                // Set initial status dropdown value
                 document.getElementById('userStatus').value = state.user.status || 'Available';
-
-                // Notice Board Logic
                 document.getElementById('noticeBoard').classList.remove('hidden');
                 app.listenToNotice();
 
-                // Visibility logic
                 if (state.user.role === 'admin') {
                     document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
                 } else {
                     document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
                 }
-                
                 app.listenToEvents();
             },
 
             logout: () => location.reload(),
-
-            // --- STATUS LOGIC ---
             updateStatus: (newStatus) => {
-                if(state.user.uid === 'admin_master') return; // Master admin doesn't sync
-                update(ref(db, `users/${state.user.uid}`), { status: newStatus })
-                    .then(() => console.log("Status updated to", newStatus));
+                if(state.user.uid === 'admin_master') return;
+                update(ref(db, `users/${state.user.uid}`), { status: newStatus });
             },
 
-            // --- NOTICE BOARD ---
+            // --- NOTICE & RESOURCES ---
             listenToNotice: () => {
                 onValue(ref(db, 'notice'), (snapshot) => {
-                    const txt = snapshot.val();
-                    document.getElementById('noticeText').innerText = txt || "Welcome to APC!";
+                    document.getElementById('noticeText').innerText = snapshot.val() || "Welcome to APC!";
                 });
             },
             editNotice: () => {
-                const current = document.getElementById('noticeText').innerText;
-                const newTxt = prompt("Update Notice Board Message:", current);
+                const newTxt = prompt("Update Notice:", document.getElementById('noticeText').innerText);
                 if(newTxt) set(ref(db, 'notice'), newTxt);
             },
-
-            // --- RESOURCES ---
             listenToResources: () => {
                 const list = document.getElementById('resourcesList');
                 onValue(ref(db, 'resources'), (snapshot) => {
                     const items = snapshot.val();
                     if(!items) { list.innerHTML = "No resources added."; return; }
-                    
                     let html = "";
                     Object.entries(items).forEach(([id, item]) => {
-                        html += `
-                            <div class="inv-item">
-                                <a href="${item.link}" target="_blank" class="resource-link">🔗 ${item.name}</a>
-                                ${state.user.role === 'admin' ? `<button class="btn-icon" onclick="app.deleteResource('${id}')">🗑️</button>` : ''}
-                            </div>
-                        `;
+                        html += `<div class="inv-item"><a href="${item.link}" target="_blank" class="resource-link">🔗 ${item.name}</a>${state.user.role === 'admin' ? `<button class="btn-icon" onclick="app.deleteResource('${id}')">🗑️</button>` : ''}</div>`;
                     });
                     list.innerHTML = html;
                 });
@@ -707,46 +651,26 @@
                 const name = document.getElementById('res_name').value;
                 const link = document.getElementById('res_link').value;
                 if(!name || !link) return;
-                push(ref(db, 'resources'), { name: name, link: link });
-                document.getElementById('res_name').value = '';
-                document.getElementById('res_link').value = '';
+                push(ref(db, 'resources'), { name, link });
+                document.getElementById('res_name').value = ''; document.getElementById('res_link').value = '';
             },
-            deleteResource: (id) => {
-                if(confirm("Delete this resource link?")) remove(ref(db, `resources/${id}`));
-            },
+            deleteResource: (id) => { if(confirm("Delete?")) remove(ref(db, `resources/${id}`)); },
 
             // --- INVENTORY ---
             listenToInventory: () => {
                 const list = document.getElementById('inventoryList');
                 onValue(ref(db, 'inventory'), (snapshot) => {
                     const items = snapshot.val();
-                    if(!items) { list.innerHTML = "No items in inventory."; return; }
-                    
+                    if(!items) { list.innerHTML = "No items."; return; }
                     let html = "";
                     Object.entries(items).forEach(([id, item]) => {
-                        let statusUI = "";
-                        if(item.status === 'out') {
-                            statusUI = `<span class="inv-status-out">Held by ${item.holder}</span>`;
-                            if(state.user.role === 'admin') {
-                                statusUI += `<button class="btn btn-outline btn-action" style="margin-left:10px;" onclick="app.invReturn('${id}')">Return</button>`;
-                            }
-                        } else {
-                            statusUI = `<span class="inv-status-avail">Available</span>`;
-                            if(state.user.role === 'admin') {
-                                statusUI += `<button class="btn btn-primary btn-action" style="margin-left:10px;" onclick="app.invCheckout('${id}')">Check Out</button>`;
-                            }
+                        let statusUI = item.status === 'out' ? `<span class="inv-status-out">Held by ${item.holder}</span>` : `<span class="inv-status-avail">Available</span>`;
+                        let btns = "";
+                        if(state.user.role === 'admin') {
+                            if(item.status === 'out') btns = `<button class="btn btn-outline btn-action" style="margin-left:10px;" onclick="app.invReturn('${id}')">Return</button>`;
+                            else btns = `<button class="btn btn-primary btn-action" style="margin-left:10px;" onclick="app.invCheckout('${id}')">Check Out</button>`;
                         }
-                        
-                        html += `
-                            <div class="inv-item">
-                                <div><strong>${item.name}</strong></div>
-                                <div style="display:flex; align-items:center;">
-                                    ${statusUI}
-                                    <button class="btn-icon" onclick="app.viewHistory('${id}')" style="margin-left:10px;" title="View History">📜</button>
-                                    ${state.user.role === 'admin' ? `<button class="btn-icon" onclick="app.invDelete('${id}')" style="margin-left:10px;">🗑️</button>` : ''}
-                                </div>
-                            </div>
-                        `;
+                        html += `<div class="inv-item"><div><strong>${item.name}</strong></div><div style="display:flex; align-items:center;">${statusUI} <button class="btn-icon" onclick="app.viewHistory('${id}')" style="margin-left:10px;" title="History">📜</button> ${btns} ${state.user.role === 'admin' ? `<button class="btn-icon" onclick="app.invDelete('${id}')" style="margin-left:10px;">🗑️</button>` : ''}</div></div>`;
                     });
                     list.innerHTML = html;
                 });
@@ -754,95 +678,56 @@
             addInventoryItem: () => {
                 const name = document.getElementById('inv_item_name').value;
                 if(!name) return;
-                push(ref(db, 'inventory'), { name: name, status: 'in', holder: '' });
+                push(ref(db, 'inventory'), { name, status: 'in', holder: '' });
                 document.getElementById('inv_item_name').value = '';
             },
             invCheckout: (id) => {
-                const person = prompt("Who is taking this item?");
+                const person = prompt("Who is taking this?");
                 if(person) {
-                    push(ref(db, `inventory/${id}/history`), {
-                        action: 'Checked Out',
-                        person: person,
-                        timestamp: Date.now()
-                    });
+                    push(ref(db, `inventory/${id}/history`), { action: 'Checked Out', person, timestamp: Date.now() });
                     update(ref(db, `inventory/${id}`), { status: 'out', holder: person });
                 }
             },
             invReturn: (id) => {
-                if(confirm("Is this item back in inventory?")) {
-                    push(ref(db, `inventory/${id}/history`), {
-                        action: 'Returned',
-                        person: state.user.name, 
-                        timestamp: Date.now()
-                    });
+                if(confirm("Is it back?")) {
+                    push(ref(db, `inventory/${id}/history`), { action: 'Returned', person: state.user.name, timestamp: Date.now() });
                     update(ref(db, `inventory/${id}`), { status: 'in', holder: '' });
                 }
             },
-            invDelete: (id) => {
-                if(confirm("Remove this item?")) remove(ref(db, `inventory/${id}`));
-            },
+            invDelete: (id) => { if(confirm("Remove item?")) remove(ref(db, `inventory/${id}`)); },
             viewHistory: (id) => {
                 document.getElementById('historyModal').classList.remove('hidden');
                 document.getElementById('historyList').innerHTML = "Loading...";
-                
                 get(ref(db, `inventory/${id}`)).then(snap => {
                     const item = snap.val();
                     document.getElementById('historyItemName').innerText = item.name;
-                    
                     if(item.history) {
                         let html = '<table class="stats-table" style="font-size:0.9rem;"><tr><th>Action</th><th>Person</th><th>Date</th></tr>';
-                        const logs = Object.values(item.history).sort((a,b) => b.timestamp - a.timestamp);
-                        
-                        logs.forEach(log => {
-                            const date = new Date(log.timestamp).toLocaleDateString() + ' ' + new Date(log.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                            const color = log.action === 'Returned' ? 'green' : 'red';
-                            html += `<tr>
-                                <td style="color:${color}; font-weight:bold;">${log.action}</td>
-                                <td>${log.person}</td>
-                                <td style="font-size:0.8rem; color:#666;">${date}</td>
-                            </tr>`;
+                        Object.values(item.history).sort((a,b) => b.timestamp - a.timestamp).forEach(log => {
+                            const date = new Date(log.timestamp).toLocaleDateString();
+                            html += `<tr><td style="color:${log.action==='Returned'?'green':'red'}">${log.action}</td><td>${log.person}</td><td>${date}</td></tr>`;
                         });
-                        html += '</table>';
-                        document.getElementById('historyList').innerHTML = html;
-                    } else {
-                        document.getElementById('historyList').innerHTML = "<p>No history available.</p>";
-                    }
+                        document.getElementById('historyList').innerHTML = html + '</table>';
+                    } else { document.getElementById('historyList').innerHTML = "<p>No history.</p>"; }
                 });
             },
 
-            // 3. EVENT LOGIC
+            // --- EVENT LOGIC ---
             publishEvent: () => {
                 const name = document.getElementById('evt_name').value;
                 const date = document.getElementById('evt_date').value;
                 const notes = document.getElementById('evt_notes').value;
                 if (!name) return alert("Event Name Required");
-
                 const tasks = {};
                 state.rolesList.forEach((role, i) => {
-                    const id = `new_role_${i}`;
-                    const isChecked = document.getElementById(`chk_${id}`).checked;
-                    const qty = parseInt(document.getElementById(`qty_${id}`).value) || 1;
-
-                    if (isChecked) {
+                    const id = `chk_new_role_${i}`; const qty = parseInt(document.getElementById(`qty_new_role_${i}`).value) || 1;
+                    if (document.getElementById(id).checked) {
                         if (qty === 1) tasks[role] = { assignedTo: "", assignedName: "" };
-                        else {
-                            for (let k = 1; k <= qty; k++) tasks[`${role} #${k}`] = { assignedTo: "", assignedName: "" };
-                        }
+                        else for (let k = 1; k <= qty; k++) tasks[`${role} #${k}`] = { assignedTo: "", assignedName: "" };
                     }
                 });
-
-                push(ref(db, 'events'), {
-                    name: name,
-                    date: date,
-                    notes: notes,
-                    status: 'active',
-                    tasks: tasks,
-                    createdAt: Date.now()
-                });
-                
-                document.getElementById('evt_name').value = '';
-                document.getElementById('evt_notes').value = '';
-                alert("Event Published!");
+                push(ref(db, 'events'), { name, date, notes, status: 'active', tasks, createdAt: Date.now() });
+                document.getElementById('evt_name').value = ''; document.getElementById('evt_notes').value = ''; alert("Event Published!");
             },
 
             listenToEvents: () => {
@@ -853,363 +738,208 @@
                 });
             },
 
-            toggleMyTasks: (isChecked) => {
-                state.filterMyTasks = isChecked;
-                app.renderEvents(state.events);
-            },
+            toggleMyTasks: (isChecked) => { state.filterMyTasks = isChecked; app.renderEvents(state.events); },
 
             renderEvents: (data) => {
                 const feed = document.getElementById('eventsFeed');
                 const pastFeed = document.getElementById('pastFeed');
-                feed.innerHTML = "";
-                pastFeed.innerHTML = "";
-
-                if(Object.keys(data).length === 0) { 
-                    feed.innerHTML = "<p style='text-align:center'>No events yet.</p>"; 
-                    return; 
-                }
+                feed.innerHTML = ""; pastFeed.innerHTML = "";
+                if(Object.keys(data).length === 0) { feed.innerHTML = "<p style='text-align:center'>No events.</p>"; return; }
 
                 const eventsArr = Object.entries(data).reverse();
-                let hasActive = false;
-                let hasPast = false;
+                let hasActive = false, hasPast = false;
 
                 eventsArr.forEach(([eventId, event]) => {
-                    // FILTER LOGIC
                     if (state.filterMyTasks) {
                         let myTaskFound = false;
-                        if(event.tasks) {
-                            Object.values(event.tasks).forEach(t => {
-                                if(t.assignedTo === state.user.uid) myTaskFound = true;
-                            });
-                        }
-                        if(!myTaskFound) return; // Skip this event
+                        if(event.tasks) Object.values(event.tasks).forEach(t => { if(t.assignedTo === state.user.uid) myTaskFound = true; });
+                        if(!myTaskFound) return;
                     }
 
-                    let tasksHtml = "";
                     const isCompleted = event.status === 'completed';
                     const isPastDate = event.date && new Date(event.date) < new Date(new Date().setHours(0,0,0,0));
                     const isHistory = isCompleted || isPastDate;
-                    
                     if(isHistory) hasPast = true; else hasActive = true;
 
-                    const pastClass = isHistory ? 'past-event' : '';
-                    let badge = "";
-                    if (isCompleted) badge = '<span class="completed-badge">Finished</span>';
-                    else if (isPastDate) badge = '<span class="past-badge">Past Date</span>';
-
-                    // Notes
-                    const notesHtml = event.notes ? `<div class="event-notes">📝 ${event.notes}</div>` : '';
-
+                    let tasksHtml = "";
                     if(event.tasks) {
-                        const sortedRoles = Object.keys(event.tasks).sort();
-                        sortedRoles.forEach((role) => {
+                        Object.keys(event.tasks).sort().forEach((role) => {
                             const info = event.tasks[role];
-                            const isTaken = info.assignedTo ? true : false;
+                            const isTaken = !!info.assignedTo;
                             let actionUI = "";
-                            
                             if(state.user.role === 'admin') {
-                                if(isTaken) {
-                                    actionUI = `
-                                        <div class="assignee">
-                                            ✅ ${info.assignedName}
-                                            <button class="btn-icon" onclick="app.unassign('${eventId}', '${role}')" title="Unassign">❌</button>
-                                        </div>`;
-                                } else {
-                                    let options = `<option value="">Select Member...</option>`;
-                                    state.allUsers.forEach(u => {
-                                        let statusTxt = "";
-                                        if (u.status === 'Busy') statusTxt = "(Busy)";
-                                        else if (u.status === 'Not in Clg') statusTxt = "(Not in Clg)";
-                                        
-                                        options += `<option value="${u.uid}::${u.name}">${u.name} ${statusTxt}</option>`;
-                                    });
-                                    actionUI = `
-                                        <select class="admin-select" onchange="app.adminAssign('${eventId}', '${role}', this.value)">
-                                            ${options}
-                                        </select>
-                                    `;
+                                if(isTaken) actionUI = `<div class="assignee">✅ ${info.assignedName} <button class="btn-icon" onclick="app.unassign('${eventId}','${role}')">❌</button></div>`;
+                                else {
+                                    let opts = `<option value="">Select...</option>`;
+                                    state.allUsers.forEach(u => opts += `<option value="${u.uid}::${u.name}">${u.name} ${u.status === 'Available' ? '' : `(${u.status})`}</option>`);
+                                    actionUI = `<select class="admin-select" onchange="app.adminAssign('${eventId}','${role}',this.value)">${opts}</select>`;
                                 }
                             } else {
-                                if (isTaken) {
-                                    actionUI = `<div class="assignee">✅ ${info.assignedName}</div>`;
-                                } else {
-                                    if(isHistory) actionUI = `<span style="color:#999; font-size:0.8rem;">Closed</span>`;
-                                    else actionUI = `<button class="btn btn-primary" style="padding:5px 10px; font-size:0.8rem;" onclick="app.claim('${eventId}', '${role}')">Claim</button>`;
-                                }
+                                if(isTaken) actionUI = `<div class="assignee">✅ ${info.assignedName}</div>`;
+                                else if(isHistory) actionUI = `<span style="color:#999; font-size:0.8rem;">Closed</span>`;
+                                else actionUI = `<button class="btn btn-primary" style="padding:5px 10px; font-size:0.8rem;" onclick="app.claim('${eventId}','${role}')">Claim</button>`;
                             }
-
-                            tasksHtml += `
-                                <div class="task-row ${isTaken ? 'taken' : ''}">
-                                    <div class="role-badge">${role}</div>
-                                    ${actionUI}
-                                </div>
-                            `;
+                            tasksHtml += `<div class="task-row ${isTaken?'taken':''}"><div class="role-badge">${role}</div>${actionUI}</div>`;
                         });
                     }
 
-                    // Drive Link Button
-                    let driveBtn = "";
-                    if(event.driveLink) {
-                        driveBtn = `<a href="${event.driveLink}" target="_blank" class="btn btn-drive btn-action" style="text-decoration:none; display:inline-flex; align-items:center;">📂 Upload/View Photos</a>`;
-                    }
+                    const adminControls = state.user.role === 'admin' ? `
+                        <div style="margin-top:10px; padding-top:10px; border-top:1px solid #eee; display:flex; gap:10px; flex-wrap:wrap;">
+                            <button class="btn btn-outline btn-action" onclick="app.openEdit('${eventId}')">✏️ Edit</button>
+                            <button class="btn btn-outline btn-action" onclick="app.generateTextReport('${eventId}')">📋 Copy</button>
+                            <button class="btn btn-primary btn-action" onclick="app.downloadPDF('${eventId}')">📄 PDF</button>
+                            ${!isCompleted ? `<button class="btn btn-secondary btn-action" onclick="app.endEvent('${eventId}')">🏁 End</button>` : ''}
+                        </div>` : '';
 
-                    let adminControls = "";
-                    if(state.user.role === 'admin') {
-                        let endBtn = "";
-                        if (!isCompleted) {
-                            endBtn = `<button class="btn btn-secondary btn-action" onclick="app.endEvent('${eventId}')">🏁 End Event</button>`;
-                        }
-
-                        adminControls = `
-                            <div style="margin-top:10px; padding-top:10px; border-top:1px solid #eee; display:flex; gap:10px; flex-wrap:wrap;">
-                                <button class="btn btn-outline btn-action" onclick="app.openEdit('${eventId}')">✏️ Edit</button>
-                                <button class="btn btn-outline btn-action" onclick="app.generateTextReport('${eventId}')">📋 Copy</button>
-                                <button class="btn btn-primary btn-action" onclick="app.downloadPDF('${eventId}')">📄 PDF</button>
-                                ${endBtn}
-                            </div>
-                        `;
-                    }
-
-                    const card = `
-                        <div class="card ${pastClass}">
-                            <div class="event-header">
-                                <div>
-                                    ${badge}
-                                    <h3 style="margin:0; display:inline-block; vertical-align:middle;">${event.name}</h3>
-                                    <div style="margin-top:5px;">
-                                        <span class="event-date">${event.date || 'TBD'}</span>
-                                    </div>
-                                </div>
-                                ${driveBtn}
-                            </div>
-                            ${notesHtml}
-                            <div>${tasksHtml}</div>
-                            ${adminControls}
+                    const card = `<div class="card ${isHistory?'past-event':''}">
+                        <div class="event-header">
+                            <div>${isCompleted ? '<span class="completed-badge">Finished</span>' : (isPastDate ? '<span class="past-badge">Past Date</span>' : '')}<h3 style="margin:0; display:inline-block; vertical-align:middle;">${event.name}</h3><div style="margin-top:5px;"><span class="event-date">${event.date || 'TBD'}</span></div></div>
+                            ${event.driveLink ? `<a href="${event.driveLink}" target="_blank" class="btn btn-drive btn-action" style="text-decoration:none;">📂 Upload Photos</a>` : ''}
                         </div>
-                    `;
+                        ${event.notes ? `<div class="event-notes">📝 ${event.notes}</div>` : ''}
+                        <div>${tasksHtml}</div>
+                        ${adminControls}
+                    </div>`;
                     
-                    if(isHistory) pastFeed.innerHTML += card;
-                    else feed.innerHTML += card;
+                    if(isHistory) pastFeed.innerHTML += card; else feed.innerHTML += card;
                 });
-
-                if(!hasActive) feed.innerHTML = "<p style='text-align:center; color:#999;'>No upcoming events found.</p>";
-                if(!hasPast) pastFeed.innerHTML = "<p style='text-align:center; color:#999;'>No history available.</p>";
+                if(!hasActive) feed.innerHTML = "<p style='text-align:center; color:#999;'>No upcoming events.</p>";
+                if(!hasPast) pastFeed.innerHTML = "<p style='text-align:center; color:#999;'>No history.</p>";
             },
 
-            adminAssign: (eventId, role, value) => {
-                if(!value) return;
-                const [uid, name] = value.split("::");
-                update(ref(db, `events/${eventId}/tasks/${role}`), { assignedTo: uid, assignedName: name });
-            },
+            adminAssign: (eid, role, val) => { if(!val) return; const [uid, name] = val.split("::"); update(ref(db, `events/${eid}/tasks/${role}`), { assignedTo: uid, assignedName: name }); },
+            unassign: (eid, role) => { if(confirm("Remove?")) update(ref(db, `events/${eid}/tasks/${role}`), { assignedTo: "", assignedName: "" }); },
+            endEvent: (eid) => { if(confirm("End event?")) update(ref(db, `events/${eid}`), { status: 'completed' }); },
+            claim: (eid, role) => { if(confirm("Claim role?")) update(ref(db, `events/${eid}/tasks/${role}`), { assignedTo: state.user.uid, assignedName: state.user.name }); },
 
-            unassign: (eventId, role) => {
-                if(!confirm("Remove this member?")) return;
-                update(ref(db, `events/${eventId}/tasks/${role}`), { assignedTo: "", assignedName: "" });
+            // REPORTING
+            generateTextReport: (eid) => {
+                const evt = state.events[eid];
+                let text = `*Event Report: ${evt.name}*\n📅 ${evt.date}\n${evt.notes ? `📝 ${evt.notes}\n` : ''}\n*Assignments:*`;
+                if(evt.tasks) Object.entries(evt.tasks).forEach(([role, info]) => text += `\n${role}: ${info.assignedName ? '✅ '+info.assignedName : '🛑 Open'}`);
+                text += `\n\n- APC Dashboard`;
+                navigator.clipboard.writeText(text).then(() => alert("Copied!"));
             },
-
-            endEvent: (eventId) => {
-                if(!confirm("Mark this event as Completed?")) return;
-                update(ref(db, `events/${eventId}`), { status: 'completed' });
-            },
-
-            claim: (eventId, role) => {
-                if(!confirm(`Confirm: You are taking the ${role} role?`)) return;
-                update(ref(db, `events/${eventId}/tasks/${role}`), { assignedTo: state.user.uid, assignedName: state.user.name });
-            },
-
-            generateTextReport: (eventId) => {
-                const evt = state.events[eventId];
-                let text = `*Event Report: ${evt.name}*\n📅 Date: ${evt.date}\n${evt.notes ? `📝 Note: ${evt.notes}\n` : ''}\n*Assignments:*`;
-                if(evt.tasks) {
-                    Object.entries(evt.tasks).forEach(([role, info]) => {
-                        const status = info.assignedName ? `✅ ${info.assignedName}` : `🛑 [Open Slot]`;
-                        text += `\n${role}: ${status}`;
-                    });
-                }
-                text += `\n\nGenerated by APC Dashboard`;
-                navigator.clipboard.writeText(text).then(() => alert("Copied to clipboard!"));
-            },
-
-            downloadPDF: (eventId) => {
-                const evt = state.events[eventId];
+            downloadPDF: (eid) => {
+                const evt = state.events[eid];
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
-                
-                const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAbFBMVEUAAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD///+m04iZAAAAI3RSTlMAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMv5rMAAAABYktHRACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gEZFBAe859Y0QAAAMRJREFUSMft1MsKwkAMhOGZqK14a7W1Vavv/4Y2uC6C4sCE/Z/Ci5MZhgH/jC5w1Xpzp/a1o/S1S68ta147S187S1+79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69v/4A/o6F45892YfAAAAAElFTkSuQmCC";
-                
-                try {
-                    doc.addImage(logoBase64, 'PNG', 10, 10, 15, 15);
-                } catch(e) { console.log("Logo Error", e); }
-
-                doc.setFillColor(255, 87, 34); 
-                doc.rect(0, 0, 210, 5, 'F');
-                
-                doc.setTextColor(0, 0, 0);
-                doc.setFontSize(22);
-                doc.setFont("helvetica", "bold");
-                doc.text("APC EVENT REPORT", 30, 22);
-
-                doc.setLineWidth(0.5);
-                doc.line(10, 30, 200, 30);
-
-                doc.setFontSize(14);
-                doc.text(`Event: ${evt.name}`, 10, 40);
-                doc.setFontSize(11);
-                doc.setFont("helvetica", "normal");
-                doc.text(`Date: ${evt.date || 'TBD'}`, 10, 47);
-                doc.text(`Status: ${evt.status || 'Active'}`, 10, 53);
-                
+                const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAbFBMVEUAAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD///+m04iZAAAAI3RSTlMAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMv5rMAAAABYktHRACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gEZFBAe859Y0QAAAMRJREFUSMft1MsKwkAMhOGZqK14a7W1Vavv/4Y2uC6C4sCE/Z/Ci5MZhgH/jC5w1Xpzp/a1o/S1S68ta147S187S1+79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69v/4A/o6F45892YfAAAAAElFTkSuQmCC";
+                try { doc.addImage(logoBase64, 'PNG', 10, 10, 15, 15); } catch(e) {}
+                doc.setFillColor(255, 87, 34); doc.rect(0, 0, 210, 5, 'F');
+                doc.setFontSize(22); doc.setFont("helvetica", "bold"); doc.text("APC EVENT REPORT", 30, 22);
+                doc.setLineWidth(0.5); doc.line(10, 30, 200, 30);
+                doc.setFontSize(14); doc.text(`Event: ${evt.name}`, 10, 40);
+                doc.setFontSize(11); doc.setFont("helvetica", "normal");
+                doc.text(`Date: ${evt.date || 'TBD'}`, 10, 47); doc.text(`Status: ${evt.status || 'Active'}`, 10, 53);
                 let startY = 62;
-
                 if(evt.notes) {
-                    doc.setFontSize(10);
-                    doc.setTextColor(50);
-                    doc.setFont("helvetica", "italic");
-                    
+                    doc.setFontSize(10); doc.setTextColor(50); doc.setFont("helvetica", "italic");
                     const splitNotes = doc.splitTextToSize(`Notes: ${evt.notes}`, 180);
-                    doc.text(splitNotes, 10, startY);
-                    
-                    startY += (splitNotes.length * 5) + 5;
+                    doc.text(splitNotes, 10, startY); startY += (splitNotes.length * 5) + 5;
                 }
-
                 const rows = [];
-                if(evt.tasks) {
-                    Object.keys(evt.tasks).sort().forEach(role => {
-                        const info = evt.tasks[role];
-                        const name = info.assignedName || "--- Open ---";
-                        const status = info.assignedName ? "Assigned" : "Pending";
-                        rows.push([role, name, status]);
-                    });
-                }
-
-                doc.autoTable({
-                    startY: startY,
-                    head: [['Role / Position', 'Member Assigned', 'Status']],
-                    body: rows,
-                    theme: 'striped',
-                    headStyles: { fillColor: [255, 87, 34] },
-                    styles: { fontSize: 10 }
-                });
-
-                let finalY = doc.lastAutoTable.finalY || startY;
-                if (finalY > 250) {
-                    doc.addPage();
-                    finalY = 20;
-                }
+                if(evt.tasks) Object.keys(evt.tasks).sort().forEach(role => rows.push([role, evt.tasks[role].assignedName || "--- Open ---", evt.tasks[role].assignedName ? "Assigned" : "Pending"]));
+                doc.autoTable({ startY, head: [['Role', 'Member', 'Status']], body: rows, theme: 'striped', headStyles: { fillColor: [255, 87, 34] }, styles: { fontSize: 10 } });
                 
-                const pageHeight = doc.internal.pageSize.height;
-                const sigY = pageHeight - 30;
-
-                doc.setLineWidth(0.5);
-                doc.line(130, sigY, 190, sigY);
-                
-                doc.setFontSize(10);
-                doc.setTextColor(0);
-                doc.setFont("helvetica", "normal");
-                doc.text("President's Signature", 140, sigY + 5);
-                
-                const today = new Date().toLocaleDateString();
-                doc.setFontSize(9);
-                doc.setTextColor(100);
-                doc.text(`Generated: ${today}`, 10, sigY + 5);
-
-                doc.save(`APC_Report_${evt.name.replace(/\s+/g, '_')}.pdf`);
+                const sigY = doc.internal.pageSize.height - 30;
+                doc.setLineWidth(0.5); doc.line(130, sigY, 190, sigY);
+                doc.setFontSize(10); doc.setTextColor(0); doc.text("President's Signature", 140, sigY + 5);
+                doc.setFontSize(9); doc.setTextColor(100); doc.text(`Generated: ${new Date().toLocaleDateString()}`, 10, sigY + 5);
+                doc.save(`APC_Report.pdf`);
             },
 
+            // EDIT EVENT
             deleteEvent: () => {
                 const id = document.getElementById('edit_id').value;
-                if(!id) return;
-
-                if(confirm("⚠️ ARE YOU SURE?\nThis will permanently delete this event and all assignments.\nThis cannot be undone.")) {
-                    remove(ref(db, `events/${id}`))
-                    .then(() => {
-                        document.getElementById('editModal').classList.add('hidden');
-                        alert("Event deleted successfully.");
-                    })
-                    .catch(err => alert("Error deleting: " + err.message));
-                }
+                if(confirm("Permanently delete event?")) remove(ref(db, `events/${id}`)).then(() => document.getElementById('editModal').classList.add('hidden'));
             },
-
-            openEdit: (eventId) => {
-                const evt = state.events[eventId];
-                document.getElementById('edit_id').value = eventId;
+            openEdit: (eid) => {
+                const evt = state.events[eid];
+                document.getElementById('edit_id').value = eid;
                 document.getElementById('edit_name').value = evt.name;
                 document.getElementById('edit_date').value = evt.date;
                 document.getElementById('edit_notes').value = evt.notes || "";
                 document.getElementById('edit_drive').value = evt.driveLink || "";
-
-                const container = document.getElementById('edit_roles_container');
-                container.innerHTML = "";
                 
-                if (evt.tasks) {
-                    Object.keys(evt.tasks).sort().forEach(role => {
-                        const info = evt.tasks[role];
-                        const extra = info.assignedName ? `(Assigned: ${info.assignedName})` : '';
-                        container.innerHTML += `
-                            <div class="role-selector">
-                                <label>
-                                    <input type="checkbox" class="edit-role-check" value="${role}" checked>
-                                    ${role} <span style="font-size:0.8em; color:var(--primary); margin-left:5px;">${extra}</span>
-                                </label>
-                            </div>
-                        `;
-                    });
-                }
-
+                const container = document.getElementById('edit_roles_container');
+                const addSelect = document.getElementById('add_role_select');
+                container.innerHTML = ""; addSelect.innerHTML = "<option value=''>Add Role...</option>";
+                state.rolesList.forEach(r => addSelect.innerHTML += `<option value="${r}">${r}</option>`);
+                
+                if(evt.tasks) Object.keys(evt.tasks).sort().forEach(role => {
+                    container.innerHTML += `<div class="role-selector"><label><input type="checkbox" class="edit-role-check" value="${role}" checked> ${role} <span style="font-size:0.8em;color:var(--primary);margin-left:5px;">${evt.tasks[role].assignedName ? '(Assigned)' : ''}</span></label></div>`;
+                });
                 document.getElementById('editModal').classList.remove('hidden');
             },
-
+            addRoleToEdit: () => {
+                const roleBase = document.getElementById('add_role_select').value;
+                if(!roleBase) return;
+                const container = document.getElementById('edit_roles_container');
+                const existing = Array.from(container.querySelectorAll('.edit-role-check')).map(i => i.value);
+                let newRole = roleBase, count = 1;
+                while(existing.includes(newRole)) { count++; newRole = `${roleBase} #${count}`; }
+                container.innerHTML += `<div class="role-selector" style="background:#e3f2fd;"><label><input type="checkbox" class="edit-role-check" value="${newRole}" checked> ${newRole} (New)</label></div>`;
+            },
             saveEdit: () => {
                 const id = document.getElementById('edit_id').value;
-                const newName = document.getElementById('edit_name').value;
-                const newDate = document.getElementById('edit_date').value;
-                const newNotes = document.getElementById('edit_notes').value;
-                const newDrive = document.getElementById('edit_drive').value;
-                
-                const existingTasks = state.events[id].tasks || {};
-                const newTasks = {};
-
+                const tasks = {};
+                // Preserve old data if role exists
+                const oldTasks = state.events[id].tasks || {};
                 document.querySelectorAll('.edit-role-check').forEach(box => {
-                    if(box.checked) {
-                        const role = box.value;
-                        newTasks[role] = existingTasks[role];
-                    }
+                    if(box.checked) tasks[box.value] = oldTasks[box.value] || { assignedTo: "", assignedName: "" };
                 });
-
                 update(ref(db, `events/${id}`), {
-                    name: newName,
-                    date: newDate,
-                    notes: newNotes,
-                    driveLink: newDrive,
-                    tasks: newTasks
-                }).then(() => {
-                    document.getElementById('editModal').classList.add('hidden');
-                    alert("Event updated!");
-                });
+                    name: document.getElementById('edit_name').value,
+                    date: document.getElementById('edit_date').value,
+                    notes: document.getElementById('edit_notes').value,
+                    driveLink: document.getElementById('edit_drive').value,
+                    tasks: tasks
+                }).then(() => { document.getElementById('editModal').classList.add('hidden'); alert("Updated!"); });
             },
 
+            // MEMBER EDIT
             listenToMembers: () => {
                 const list = document.getElementById('membersList');
                 onValue(ref(db, 'users'), (snapshot) => {
                     const users = snapshot.val();
-                    if(!users) { list.innerHTML = "No members found."; return; }
-                    
-                    let html = `<table class="stats-table"><tr><th>Name</th><th>Role</th><th>Status</th><th>Action</th></tr>`;
-                    Object.entries(users).forEach(([uid, user]) => {
-                        let st = user.status || 'Available';
-                        let color = st === 'Available' ? 'green' : 'red';
-                        html += `<tr>
-                            <td>${user.name}</td>
-                            <td>${user.role}</td>
-                            <td style="color:${color}; font-weight:bold; font-size:0.8rem;">${st}</td>
-                            <td><button class="btn-icon" onclick="app.deleteMember('${uid}')">🗑️</button></td>
-                        </tr>`;
+                    if(!users) { list.innerHTML = "No members."; return; }
+                    let html = `<table class="stats-table"><tr><th>Name</th><th>Role</th><th>Action</th></tr>`;
+                    Object.entries(users).forEach(([uid, u]) => {
+                        html += `<tr><td>${u.name}</td><td>${u.role}</td><td><button class="btn-icon" onclick="app.openEditMember('${uid}')">✏️</button> <button class="btn-icon" onclick="app.deleteMember('${uid}')">🗑️</button></td></tr>`;
                     });
-                    html += "</table>";
-                    list.innerHTML = html;
+                    list.innerHTML = html + "</table>";
                 });
             },
-            deleteMember: (uid) => remove(ref(db, `users/${uid}`)),
+            openEditMember: (uid) => {
+                get(ref(db, `users/${uid}`)).then(snap => {
+                    if(snap.exists()) {
+                        const u = snap.val();
+                        document.getElementById('mem_edit_uid').value = uid;
+                        document.getElementById('mem_edit_name').value = u.name || "";
+                        document.getElementById('mem_edit_number').value = u.number || "";
+                        document.getElementById('mem_edit_batch').value = u.batch || "";
+                        document.getElementById('mem_edit_clgid').value = u.clgId || "";
+                        document.getElementById('mem_edit_email').value = u.email || "";
+                        document.getElementById('mem_edit_username').value = u.username || "";
+                        document.getElementById('mem_edit_password').value = u.password || "";
+                        document.getElementById('editMemberModal').classList.remove('hidden');
+                    }
+                });
+            },
+            saveMemberEdit: () => {
+                const uid = document.getElementById('mem_edit_uid').value;
+                update(ref(db, `users/${uid}`), {
+                    name: document.getElementById('mem_edit_name').value,
+                    number: document.getElementById('mem_edit_number').value,
+                    batch: document.getElementById('mem_edit_batch').value,
+                    clgId: document.getElementById('mem_edit_clgid').value,
+                    email: document.getElementById('mem_edit_email').value,
+                    username: document.getElementById('mem_edit_username').value,
+                    password: document.getElementById('mem_edit_password').value
+                }).then(() => { document.getElementById('editMemberModal').classList.add('hidden'); alert("Saved!"); });
+            },
+            deleteMember: (uid) => { if(confirm("Delete member?")) remove(ref(db, `users/${uid}`)); },
             createMember: () => {
                 const data = {
                     name: document.getElementById('new_name').value,
@@ -1219,45 +949,32 @@
                     email: document.getElementById('new_email').value,
                     username: document.getElementById('new_username').value,
                     password: document.getElementById('new_password').value,
-                    role: "member",
-                    status: "Available",
-                    createdAt: Date.now()
+                    role: "member", status: "Available", createdAt: Date.now()
                 };
                 if(!data.username) return alert("Username required");
-                push(ref(db, 'users'), data).then(() => {
-                    alert("Member created!");
-                    document.querySelectorAll('#membersPanel input').forEach(i => i.value = '');
-                });
+                push(ref(db, 'users'), data).then(() => { alert("Created!"); document.querySelectorAll('#membersPanel input').forEach(i => i.value=''); });
             },
 
             calculateStats: () => {
                 const counts = {};
                 Object.values(state.events).forEach(evt => {
-                    if(evt.tasks) {
-                        Object.values(evt.tasks).forEach(task => {
-                            if(task.assignedName) counts[task.assignedName] = (counts[task.assignedName] || 0) + 1;
-                        });
-                    }
+                    if(evt.tasks) Object.values(evt.tasks).forEach(task => { if(task.assignedName) counts[task.assignedName] = (counts[task.assignedName] || 0) + 1; });
                 });
                 const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
-                let html = `<table class="stats-table"><tr><th>Rank</th><th>Member</th><th>Events Covered</th></tr>`;
+                let html = `<table class="stats-table"><tr><th>Rank</th><th>Member</th><th>Events</th></tr>`;
                 sorted.forEach((item, index) => {
-                    let rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
+                    let rankClass = index===0?'rank-1':index===1?'rank-2':index===2?'rank-3':'';
                     html += `<tr><td><div class="stats-rank ${rankClass}">${index+1}</div></td><td>${item[0]}</td><td>${item[1]}</td></tr>`;
                 });
-                html += "</table>";
-                if(sorted.length === 0) html = "<p>No data yet.</p>";
-                document.getElementById('statsContent').innerHTML = html;
+                document.getElementById('statsContent').innerHTML = html + "</table>";
             },
 
             switchTab: (tabName) => {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                 document.querySelector(`.tab-btn[data-tab="${tabName}"]`).classList.add('active');
-                
                 ['events', 'stats', 'members', 'inventory', 'resources'].forEach(t => {
                     const el = document.getElementById(`${t}Panel`);
-                    if(t === tabName) el.classList.remove('hidden');
-                    else el.classList.add('hidden');
+                    if(t === tabName) el.classList.remove('hidden'); else el.classList.add('hidden');
                 });
                 if(tabName === 'stats') app.calculateStats();
                 if(tabName === 'members') app.listenToMembers();
