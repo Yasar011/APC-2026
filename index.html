@@ -48,6 +48,8 @@
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
         .btn-danger { background: #ffebee; color: #c62828; }
         .btn-action { padding: 4px 8px; font-size: 0.8rem; }
+        .btn-icon { background: none; border: none; cursor: pointer; padding: 2px 5px; font-size: 0.8rem; opacity: 0.6; transition: 0.2s; }
+        .btn-icon:hover { opacity: 1; transform: scale(1.1); }
 
         input, select {
             width: 100%;
@@ -61,6 +63,16 @@
             background: #fafafa;
         }
         input:focus { outline: 2px solid var(--primary); border-color: transparent; }
+        
+        /* Admin Specific Select */
+        .admin-select {
+            padding: 6px 10px;
+            font-size: 0.85rem;
+            margin-bottom: 0;
+            border: 1px solid #ddd;
+            width: auto;
+            min-width: 150px;
+        }
 
         /* --- LOGIN PAGE --- */
         .login-container {
@@ -144,6 +156,7 @@
         }
         .card.past-event {
             opacity: 0.7;
+            background: #fdfdfd;
             border-left: 5px solid #ccc;
         }
         .card-title { margin-top: 0; color: var(--text-main); font-size: 1.2rem; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
@@ -154,6 +167,7 @@
         .event-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         .event-date { background: #eee; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; display: inline-block; }
         .past-badge { background: #ffebee; color: #c62828; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-right: 5px; }
+        .completed-badge { background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-right: 5px; }
 
         .task-row {
             display: flex;
@@ -335,8 +349,9 @@
         // --- GLOBAL APP STATE ---
         const state = {
             user: null, 
-            events: {}, // Store events locally for stats/editing
-            rolesList: ['Photography', 'Videography', 'Reels', 'Graphic Design', 'Captioning', 'Hosting']
+            events: {}, 
+            rolesList: ['Photography', 'Videography', 'Reels', 'Graphic Design', 'Captioning', 'Hosting'],
+            allUsers: [] // For Admin Dropdown
         };
 
         // --- APP CONTROLLER ---
@@ -354,6 +369,7 @@
                 // ADMIN BACKDOOR
                 if (u === "Yasar C H" && p === "Yasar@2004") {
                     state.user = { username: "Yasar C H", name: "Yasar C H", role: "admin", uid: "admin_master" };
+                    await app.loadAllUsersForAdmin(); // Fetch users immediately
                     app.initDashboard();
                     return;
                 }
@@ -370,7 +386,13 @@
                                 found = true;
                             }
                         });
-                        found ? app.initDashboard() : err.innerText = "Invalid credentials";
+                        
+                        if (found) {
+                            if (state.user.role === 'admin') app.loadAllUsersForAdmin();
+                            app.initDashboard();
+                        } else {
+                            err.innerText = "Invalid credentials";
+                        }
                     } else {
                         err.innerText = "No users found.";
                     }
@@ -378,6 +400,21 @@
                     err.innerText = "Connection error";
                     console.error(error);
                 });
+            },
+
+            // Fetch users for Dropdown
+            loadAllUsersForAdmin: async () => {
+                const dbRef = ref(db);
+                const snapshot = await get(child(dbRef, 'users'));
+                state.allUsers = [];
+                if (snapshot.exists()) {
+                    snapshot.forEach(childSnap => {
+                        state.allUsers.push({
+                            uid: childSnap.key,
+                            name: childSnap.val().name
+                        });
+                    });
+                }
             },
 
             // 2. DASHBOARD
@@ -417,6 +454,7 @@
                 push(ref(db, 'events'), {
                     name: name,
                     date: date,
+                    status: 'active', // New Field
                     tasks: tasks,
                     createdAt: Date.now()
                 });
@@ -429,7 +467,7 @@
                 onValue(ref(db, 'events'), (snapshot) => {
                     feed.innerHTML = "";
                     const data = snapshot.val();
-                    state.events = data || {}; // Save for stats
+                    state.events = data || {}; 
                     
                     if(!data) { feed.innerHTML = "<p style='text-align:center'>No events yet.</p>"; return; }
 
@@ -438,40 +476,77 @@
                     eventsArr.forEach(([eventId, event]) => {
                         let tasksHtml = "";
                         
-                        // Sort out past events visually
-                        const isPast = event.date && new Date(event.date) < new Date(new Date().setHours(0,0,0,0));
-                        const pastClass = isPast ? 'past-event' : '';
-                        const badge = isPast ? '<span class="past-badge">Past</span>' : '';
+                        // Check Status
+                        const isCompleted = event.status === 'completed';
+                        const isPastDate = event.date && new Date(event.date) < new Date(new Date().setHours(0,0,0,0));
+                        
+                        // Styling classes
+                        const pastClass = (isPastDate || isCompleted) ? 'past-event' : '';
+                        let badge = "";
+                        if (isCompleted) badge = '<span class="completed-badge">Finished</span>';
+                        else if (isPastDate) badge = '<span class="past-badge">Past Date</span>';
 
                         // Render Tasks
                         if(event.tasks) {
                             Object.entries(event.tasks).forEach(([role, info]) => {
                                 const isTaken = info.assignedTo ? true : false;
-                                let btn = "";
-                                if (isTaken) {
-                                    btn = `<div class="assignee">✅ ${info.assignedName}</div>`;
-                                } else {
-                                    // Disable claiming if past event
-                                    if(isPast) btn = `<span style="color:#999; font-size:0.8rem;">Expired</span>`;
-                                    else btn = `<button class="btn btn-primary" style="padding:5px 10px; font-size:0.8rem;" onclick="app.claim('${eventId}', '${role}')">Claim</button>`;
+                                let actionUI = "";
+                                
+                                // === ADMIN VIEW ===
+                                if(state.user.role === 'admin') {
+                                    if(isTaken) {
+                                        // Show Name + Remove Button
+                                        actionUI = `
+                                            <div class="assignee">
+                                                ✅ ${info.assignedName}
+                                                <button class="btn-icon" onclick="app.unassign('${eventId}', '${role}')" title="Unassign Member">❌</button>
+                                            </div>`;
+                                    } else {
+                                        // Show Dropdown
+                                        let options = `<option value="">Select Member...</option>`;
+                                        state.allUsers.forEach(u => {
+                                            options += `<option value="${u.uid}::${u.name}">${u.name}</option>`;
+                                        });
+                                        actionUI = `
+                                            <select class="admin-select" onchange="app.adminAssign('${eventId}', '${role}', this.value)">
+                                                ${options}
+                                            </select>
+                                        `;
+                                    }
+                                } 
+                                // === MEMBER VIEW ===
+                                else {
+                                    if (isTaken) {
+                                        actionUI = `<div class="assignee">✅ ${info.assignedName}</div>`;
+                                    } else {
+                                        // Disable claiming if completed/past
+                                        if(isCompleted || isPastDate) actionUI = `<span style="color:#999; font-size:0.8rem;">Closed</span>`;
+                                        else actionUI = `<button class="btn btn-primary" style="padding:5px 10px; font-size:0.8rem;" onclick="app.claim('${eventId}', '${role}')">Claim</button>`;
+                                    }
                                 }
 
                                 tasksHtml += `
                                     <div class="task-row ${isTaken ? 'taken' : ''}">
                                         <div class="role-badge">${role}</div>
-                                        ${btn}
+                                        ${actionUI}
                                     </div>
                                 `;
                             });
                         }
 
-                        // Admin Controls
+                        // Admin Controls Footer
                         let adminControls = "";
                         if(state.user.role === 'admin') {
+                            let endBtn = "";
+                            if (!isCompleted) {
+                                endBtn = `<button class="btn btn-secondary btn-action" onclick="app.endEvent('${eventId}')">🏁 End Event</button>`;
+                            }
+
                             adminControls = `
-                                <div style="margin-top:10px; padding-top:10px; border-top:1px solid #eee; display:flex; gap:10px;">
+                                <div style="margin-top:10px; padding-top:10px; border-top:1px solid #eee; display:flex; gap:10px; flex-wrap:wrap;">
                                     <button class="btn btn-outline btn-action" onclick="app.openEdit('${eventId}')">✏️ Edit</button>
-                                    <button class="btn btn-outline btn-action" onclick="app.generateReport('${eventId}')">📋 Copy Report</button>
+                                    <button class="btn btn-outline btn-action" onclick="app.generateReport('${eventId}')">📋 Report</button>
+                                    ${endBtn}
                                 </div>
                             `;
                         }
@@ -496,6 +571,33 @@
                 });
             },
 
+            // --- ADMIN ACTIONS ---
+            adminAssign: (eventId, role, value) => {
+                if(!value) return;
+                const [uid, name] = value.split("::"); // We stored both in value
+                
+                update(ref(db, `events/${eventId}/tasks/${role}`), {
+                    assignedTo: uid,
+                    assignedName: name
+                });
+            },
+
+            unassign: (eventId, role) => {
+                if(!confirm("Remove this member from the role?")) return;
+                update(ref(db, `events/${eventId}/tasks/${role}`), {
+                    assignedTo: "",
+                    assignedName: ""
+                });
+            },
+
+            endEvent: (eventId) => {
+                if(!confirm("Mark this event as Completed? It will move to history.")) return;
+                update(ref(db, `events/${eventId}`), {
+                    status: 'completed'
+                });
+            },
+
+            // --- MEMBER ACTIONS ---
             claim: (eventId, role) => {
                 if(!confirm(`Confirm: You are taking the ${role} role?`)) return;
                 update(ref(db, `events/${eventId}/tasks/${role}`), {
@@ -507,7 +609,6 @@
             // 4. STATS LOGIC
             calculateStats: () => {
                 const counts = {};
-                // Iterate all events
                 Object.values(state.events).forEach(evt => {
                     if(evt.tasks) {
                         Object.values(evt.tasks).forEach(task => {
@@ -518,7 +619,6 @@
                     }
                 });
 
-                // Convert to array and sort
                 const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
                 
                 let html = `<table class="stats-table"><tr><th>Rank</th><th>Member</th><th>Events Covered</th></tr>`;
@@ -550,7 +650,6 @@
                 }
                 
                 text += `\n\nGenerated by APC Dashboard`;
-                
                 navigator.clipboard.writeText(text).then(() => {
                     alert("Report copied to clipboard! Paste it in WhatsApp.");
                 });
@@ -567,7 +666,6 @@
                 container.innerHTML = "";
                 
                 state.rolesList.forEach(role => {
-                    // Check if role exists in current event
                     const exists = evt.tasks && evt.tasks[role];
                     const isChecked = exists ? 'checked' : '';
                     const extra = exists && exists.assignedName ? `(Assigned: ${exists.assignedName})` : '';
@@ -588,7 +686,6 @@
                 const newName = document.getElementById('edit_name').value;
                 const newDate = document.getElementById('edit_date').value;
                 
-                // Get existing tasks to preserve assignees if role is kept
                 const existingTasks = state.events[id].tasks || {};
                 const newTasks = {};
 
@@ -596,10 +693,8 @@
                     if(box.checked) {
                         const role = box.value;
                         if(existingTasks[role]) {
-                            // Keep existing data (assignee)
                             newTasks[role] = existingTasks[role];
                         } else {
-                            // Create new empty slot
                             newTasks[role] = { assignedTo: "", assignedName: "" };
                         }
                     }
