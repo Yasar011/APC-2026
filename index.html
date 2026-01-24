@@ -506,7 +506,7 @@
                 // ADMIN BACKDOOR
                 if (u === "Yasar C H" && p === "Yasar@2004") {
                     state.user = { username: "Yasar C H", name: "Yasar C H", role: "admin", uid: "admin_master", status: "Available" };
-                    await app.loadAllUsersForAdmin(); 
+                    app.loadAllUsersForAdmin(); 
                     app.initDashboard();
                     return;
                 }
@@ -554,7 +554,7 @@
                 });
             },
 
-            loadAllUsersForAdmin: async () => {
+            loadAllUsersForAdmin: () => {
                 // Listen to USERS for assignments
                 onValue(ref(db, 'users'), (snapshot) => {
                     state.allUsers = [];
@@ -762,11 +762,25 @@
             renderEvents: (data) => {
                 const feed = document.getElementById('eventsFeed');
                 const pastFeed = document.getElementById('pastFeed');
-                feed.innerHTML = ""; pastFeed.innerHTML = "";
-                if(Object.keys(data).length === 0) { feed.innerHTML = "<p style='text-align:center'>No events.</p>"; return; }
+                
+                if(Object.keys(data).length === 0) { 
+                    feed.innerHTML = "<p style='text-align:center'>No events.</p>"; 
+                    pastFeed.innerHTML = "<p style='text-align:center'>No history.</p>"; 
+                    return; 
+                }
 
                 const eventsArr = Object.entries(data).reverse();
+                let activeHtml = "";
+                let pastHtml = "";
                 let hasActive = false, hasPast = false;
+
+                // Pre-calculate Admin Options
+                let adminUserOptions = `<option value="">Select...</option>`;
+                if(state.user.role === 'admin') {
+                    state.allUsers.forEach(u => {
+                        adminUserOptions += `<option value="${u.uid}::${u.name}">${u.name} ${u.status === 'Available' ? '' : `(${u.status})`}</option>`;
+                    });
+                }
 
                 eventsArr.forEach(([eventId, event]) => {
                     if (state.filterMyTasks) {
@@ -789,9 +803,7 @@
                             if(state.user.role === 'admin') {
                                 if(isTaken) actionUI = `<div class="assignee">✅ ${info.assignedName} <button class="btn-icon" onclick="app.unassign('${eventId}','${role}')">❌</button></div>`;
                                 else {
-                                    let opts = `<option value="">Select...</option>`;
-                                    state.allUsers.forEach(u => opts += `<option value="${u.uid}::${u.name}">${u.name} ${u.status === 'Available' ? '' : `(${u.status})`}</option>`);
-                                    actionUI = `<select class="admin-select" onchange="app.adminAssign('${eventId}','${role}',this.value)">${opts}</select>`;
+                                    actionUI = `<select class="admin-select" onchange="app.adminAssign('${eventId}','${role}',this.value)">${adminUserOptions}</select>`;
                                 }
                             } else {
                                 if(isTaken) actionUI = `<div class="assignee">✅ ${info.assignedName}</div>`;
@@ -820,10 +832,11 @@
                         ${adminControls}
                     </div>`;
                     
-                    if(isHistory) pastFeed.innerHTML += card; else feed.innerHTML += card;
+                    if(isHistory) pastHtml += card; else activeHtml += card;
                 });
-                if(!hasActive) feed.innerHTML = "<p style='text-align:center; color:#999;'>No upcoming events.</p>";
-                if(!hasPast) pastFeed.innerHTML = "<p style='text-align:center; color:#999;'>No history.</p>";
+
+                feed.innerHTML = activeHtml || "<p style='text-align:center; color:#999;'>No upcoming events.</p>";
+                pastFeed.innerHTML = pastHtml || "<p style='text-align:center; color:#999;'>No history.</p>";
             },
 
             adminAssign: (eid, role, val) => { if(!val) return; const [uid, name] = val.split("::"); update(ref(db, `events/${eid}/tasks/${role}`), { assignedTo: uid, assignedName: name }); },
@@ -845,7 +858,7 @@
                     const evt = state.events[eid];
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
-                    const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAbFBMVEUAAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD///+m04iZAAAAI3RSTlMAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMv5rMAAAABYktHRACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gEZFBAe859Y0QAAAMRJREFUSMft1MsKwkAMhOGZqK14a7W1Vavv/4Y2uC6C4sCE/Z/Ci5MZhgH/jC5w1Xpzp/a1o/S1S68ta147S187S1+79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69v/4A/o6F45892YfAAAAAElFTkSuQmCC";
+                    const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAbFBMVEUAAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD///+m04iZAAAAI3RSTlMAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMv5rMAAAABYktHRACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gEZFBAe859Y0QAAAMRJREFUSMft1MsKwkAMhOGZqK14a7W1Vavv/4Y2uC6C4sCE/Z/Ci5MZhgH/jC5w1Xpzp/a1o/S1S68ta147S187S1+79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69v/4A/o6F45892YfAAAAAElFTkSuQmCC";
                     try { doc.addImage(logoBase64, 'PNG', 10, 10, 15, 15); } catch(e) {}
                     doc.setFillColor(255, 87, 34); doc.rect(0, 0, 210, 5, 'F');
                     doc.setTextColor(0, 0, 0); doc.setFontSize(22); doc.setFont("helvetica", "bold"); doc.text("APC EVENT REPORT", 30, 22);
@@ -889,9 +902,12 @@
                 container.innerHTML = ""; addSelect.innerHTML = "<option value=''>Add Role...</option>";
                 state.rolesList.forEach(r => addSelect.innerHTML += `<option value="${r}">${r}</option>`);
                 
+                // Build string first
+                let html = "";
                 if(evt.tasks) Object.keys(evt.tasks).sort().forEach(role => {
-                    container.innerHTML += `<div class="role-selector"><label><input type="checkbox" class="edit-role-check" value="${role}" checked> ${role} <span style="font-size:0.8em;color:var(--primary);margin-left:5px;">${evt.tasks[role].assignedName ? '(Assigned)' : ''}</span></label></div>`;
+                    html += `<div class="role-selector"><label><input type="checkbox" class="edit-role-check" value="${role}" checked> ${role} <span style="font-size:0.8em;color:var(--primary);margin-left:5px;">${evt.tasks[role].assignedName ? '(Assigned)' : ''}</span></label></div>`;
                 });
+                container.innerHTML = html;
                 document.getElementById('editModal').classList.remove('hidden');
             },
             addRoleToEdit: () => {
@@ -901,7 +917,7 @@
                 const existing = Array.from(container.querySelectorAll('.edit-role-check')).map(i => i.value);
                 let newRole = roleBase, count = 1;
                 while(existing.includes(newRole)) { count++; newRole = `${roleBase} #${count}`; }
-                container.innerHTML += `<div class="role-selector" style="background:#e3f2fd;"><label><input type="checkbox" class="edit-role-check" value="${newRole}" checked> ${newRole} (New)</label></div>`;
+                container.insertAdjacentHTML('beforeend', `<div class="role-selector" style="background:#e3f2fd;"><label><input type="checkbox" class="edit-role-check" value="${newRole}" checked> ${newRole} (New)</label></div>`);
             },
             saveEdit: () => {
                 const id = document.getElementById('edit_id').value;
