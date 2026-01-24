@@ -487,7 +487,7 @@
         </div>
     </div>
 
-    <!-- EDIT MODAL -->
+    <!-- EDIT EVENT MODAL -->
     <div id="editModal" class="modal-overlay hidden">
         <div class="modal-content">
             <h3 style="margin-top:0;">Edit Event</h3>
@@ -511,10 +511,25 @@
                 <!-- Populated dynamically -->
             </div>
             
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button class="btn btn-primary" onclick="app.saveEdit()">Save Changes</button>
-                <button class="btn btn-secondary" onclick="document.getElementById('editModal').classList.add('hidden')">Cancel</button>
+            <div style="display:flex; justify-content:space-between; margin-top:20px;">
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-primary" onclick="app.saveEdit()">Save Changes</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('editModal').classList.add('hidden')">Cancel</button>
+                </div>
+                <button class="btn btn-danger" onclick="app.deleteEvent()">Delete Event</button>
             </div>
+        </div>
+    </div>
+
+    <!-- HISTORY MODAL -->
+    <div id="historyModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 style="margin-top:0;">📜 Equipment History</h3>
+            <h4 id="historyItemName" style="color:var(--primary); margin-top:0;"></h4>
+            <div id="historyList" style="max-height:300px; overflow-y:auto; margin-top:15px;">
+                Loading...
+            </div>
+            <button class="btn btn-secondary" style="margin-top:20px; width:100%;" onclick="document.getElementById('historyModal').classList.add('hidden')">Close</button>
         </div>
     </div>
 
@@ -725,8 +740,9 @@
                         html += `
                             <div class="inv-item">
                                 <div><strong>${item.name}</strong></div>
-                                <div>
+                                <div style="display:flex; align-items:center;">
                                     ${statusUI}
+                                    <button class="btn-icon" onclick="app.viewHistory('${id}')" style="margin-left:10px;" title="View History">📜</button>
                                     ${state.user.role === 'admin' ? `<button class="btn-icon" onclick="app.invDelete('${id}')" style="margin-left:10px;">🗑️</button>` : ''}
                                 </div>
                             </div>
@@ -743,13 +759,55 @@
             },
             invCheckout: (id) => {
                 const person = prompt("Who is taking this item?");
-                if(person) update(ref(db, `inventory/${id}`), { status: 'out', holder: person });
+                if(person) {
+                    push(ref(db, `inventory/${id}/history`), {
+                        action: 'Checked Out',
+                        person: person,
+                        timestamp: Date.now()
+                    });
+                    update(ref(db, `inventory/${id}`), { status: 'out', holder: person });
+                }
             },
             invReturn: (id) => {
-                if(confirm("Is this item back in inventory?")) update(ref(db, `inventory/${id}`), { status: 'in', holder: '' });
+                if(confirm("Is this item back in inventory?")) {
+                    push(ref(db, `inventory/${id}/history`), {
+                        action: 'Returned',
+                        person: state.user.name, 
+                        timestamp: Date.now()
+                    });
+                    update(ref(db, `inventory/${id}`), { status: 'in', holder: '' });
+                }
             },
             invDelete: (id) => {
                 if(confirm("Remove this item?")) remove(ref(db, `inventory/${id}`));
+            },
+            viewHistory: (id) => {
+                document.getElementById('historyModal').classList.remove('hidden');
+                document.getElementById('historyList').innerHTML = "Loading...";
+                
+                get(ref(db, `inventory/${id}`)).then(snap => {
+                    const item = snap.val();
+                    document.getElementById('historyItemName').innerText = item.name;
+                    
+                    if(item.history) {
+                        let html = '<table class="stats-table" style="font-size:0.9rem;"><tr><th>Action</th><th>Person</th><th>Date</th></tr>';
+                        const logs = Object.values(item.history).sort((a,b) => b.timestamp - a.timestamp);
+                        
+                        logs.forEach(log => {
+                            const date = new Date(log.timestamp).toLocaleDateString() + ' ' + new Date(log.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                            const color = log.action === 'Returned' ? 'green' : 'red';
+                            html += `<tr>
+                                <td style="color:${color}; font-weight:bold;">${log.action}</td>
+                                <td>${log.person}</td>
+                                <td style="font-size:0.8rem; color:#666;">${date}</td>
+                            </tr>`;
+                        });
+                        html += '</table>';
+                        document.getElementById('historyList').innerHTML = html;
+                    } else {
+                        document.getElementById('historyList').innerHTML = "<p>No history available.</p>";
+                    }
+                });
             },
 
             // 3. EVENT LOGIC
@@ -977,25 +1035,41 @@
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
                 
-                doc.setFillColor(255, 87, 34); 
-                doc.rect(0, 0, 210, 20, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(16);
-                doc.setFont("helvetica", "bold");
-                doc.text("APC EVENT REPORT", 10, 13);
+                const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAbFBMVEUAAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD///+m04iZAAAAI3RSTlMAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMv5rMAAAABYktHRACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gEZFBAe859Y0QAAAMRJREFUSMft1MsKwkAMhOGZqK14a7W1Vavv/4Y2uC6C4sCE/Z/Ci5MZhgH/jC5w1Xpzp/a1o/S1S68ta147S187S1+79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69v/4A/o6F45892YfAAAAAElFTkSuQmCC";
+                
+                try {
+                    doc.addImage(logoBase64, 'PNG', 10, 10, 15, 15);
+                } catch(e) { console.log("Logo Error", e); }
 
+                doc.setFillColor(255, 87, 34); 
+                doc.rect(0, 0, 210, 5, 'F');
+                
                 doc.setTextColor(0, 0, 0);
+                doc.setFontSize(22);
+                doc.setFont("helvetica", "bold");
+                doc.text("APC EVENT REPORT", 30, 22);
+
+                doc.setLineWidth(0.5);
+                doc.line(10, 30, 200, 30);
+
                 doc.setFontSize(14);
-                doc.text(`Event: ${evt.name}`, 10, 35);
+                doc.text(`Event: ${evt.name}`, 10, 40);
                 doc.setFontSize(11);
                 doc.setFont("helvetica", "normal");
-                doc.text(`Date: ${evt.date || 'TBD'}`, 10, 42);
-                doc.text(`Status: ${evt.status || 'Active'}`, 10, 48);
+                doc.text(`Date: ${evt.date || 'TBD'}`, 10, 47);
+                doc.text(`Status: ${evt.status || 'Active'}`, 10, 53);
                 
+                let startY = 62;
+
                 if(evt.notes) {
                     doc.setFontSize(10);
-                    doc.setTextColor(100);
-                    doc.text(`Notes: ${evt.notes}`, 10, 56);
+                    doc.setTextColor(50);
+                    doc.setFont("helvetica", "italic");
+                    
+                    const splitNotes = doc.splitTextToSize(`Notes: ${evt.notes}`, 180);
+                    doc.text(splitNotes, 10, startY);
+                    
+                    startY += (splitNotes.length * 5) + 5;
                 }
 
                 const rows = [];
@@ -1009,7 +1083,7 @@
                 }
 
                 doc.autoTable({
-                    startY: 65,
+                    startY: startY,
                     head: [['Role / Position', 'Member Assigned', 'Status']],
                     body: rows,
                     theme: 'striped',
@@ -1017,7 +1091,43 @@
                     styles: { fontSize: 10 }
                 });
 
+                let finalY = doc.lastAutoTable.finalY || startY;
+                if (finalY > 250) {
+                    doc.addPage();
+                    finalY = 20;
+                }
+                
+                const pageHeight = doc.internal.pageSize.height;
+                const sigY = pageHeight - 30;
+
+                doc.setLineWidth(0.5);
+                doc.line(130, sigY, 190, sigY);
+                
+                doc.setFontSize(10);
+                doc.setTextColor(0);
+                doc.setFont("helvetica", "normal");
+                doc.text("President's Signature", 140, sigY + 5);
+                
+                const today = new Date().toLocaleDateString();
+                doc.setFontSize(9);
+                doc.setTextColor(100);
+                doc.text(`Generated: ${today}`, 10, sigY + 5);
+
                 doc.save(`APC_Report_${evt.name.replace(/\s+/g, '_')}.pdf`);
+            },
+
+            deleteEvent: () => {
+                const id = document.getElementById('edit_id').value;
+                if(!id) return;
+
+                if(confirm("⚠️ ARE YOU SURE?\nThis will permanently delete this event and all assignments.\nThis cannot be undone.")) {
+                    remove(ref(db, `events/${id}`))
+                    .then(() => {
+                        document.getElementById('editModal').classList.add('hidden');
+                        alert("Event deleted successfully.");
+                    })
+                    .catch(err => alert("Error deleting: " + err.message));
+                }
             },
 
             openEdit: (eventId) => {
