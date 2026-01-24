@@ -87,6 +87,12 @@
         .resource-link { color: var(--primary); text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 5px; }
         .resource-link:hover { text-decoration: underline; }
 
+        /* Requests Box */
+        .req-box { background: #fff3e0; padding: 10px; margin-top: 10px; border-radius: 8px; border: 1px solid #ffe0b2; }
+        .req-title { font-size: 0.85rem; font-weight: bold; color: #e65100; margin: 0 0 5px; }
+        .req-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #ffe0b2; font-size: 0.9rem; }
+        .req-item:last-child { border-bottom: none; }
+
         /* --- AUTH PAGES --- */
         .login-container {
             min-height: 100vh; display: flex; justify-content: center; align-items: center;
@@ -130,7 +136,8 @@
         .event-date { background: #eee; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; display: inline-block; }
         .past-badge { background: #ffebee; color: #c62828; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-right: 5px; }
         .completed-badge { background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-right: 5px; }
-        .event-notes { background: #fff8e1; border-left: 4px solid #ffc107; padding: 10px; margin-bottom: 15px; font-size: 0.9rem; color: #5d4037; }
+        .event-notes { background: #fff8e1; border-left: 4px solid #ffc107; padding: 10px; margin-bottom: 5px; font-size: 0.9rem; color: #5d4037; }
+        .event-perms { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 10px; margin-bottom: 15px; font-size: 0.9rem; color: #0d47a1; }
 
         .task-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 8px; border: 1px solid transparent; }
         .task-row.taken { background: white; border-color: #e0e0e0; }
@@ -322,6 +329,8 @@
                         <input type="date" id="evt_date">
                     </div>
                     <textarea id="evt_notes" placeholder="Instructions / Notes (e.g. Dress Code, Meeting Time)"></textarea>
+                    <textarea id="evt_permissions" placeholder="Permissions Required (e.g. Principal Approval, HOD Sign, Security Gate Pass)..." style="height:60px;"></textarea>
+                    
                     <p style="font-size:0.9rem; font-weight:600; margin-bottom:5px;">Select Roles & Quantities:</p>
                     <div id="roleCreatorList"></div>
                     <button class="btn btn-primary" onclick="app.publishEvent()" style="margin-top:15px;">Publish Event</button>
@@ -350,6 +359,8 @@
             <input type="date" id="edit_date">
             <label style="font-size:0.8rem; font-weight:bold;">Instructions / Notes</label>
             <textarea id="edit_notes" placeholder="Notes..."></textarea>
+            <label style="font-size:0.8rem; font-weight:bold;">Permissions</label>
+            <textarea id="edit_permissions" placeholder="Required Permissions..."></textarea>
             <div style="margin-top:10px; background:#e8f5e9; padding:10px; border-radius:8px; border:1px solid #c8e6c9;">
                 <label style="font-size:0.8rem; font-weight:bold; color:#2e7d32;">📂 Google Drive / Photos Link</label>
                 <input type="text" id="edit_drive" placeholder="Paste link..." style="margin-bottom:0;">
@@ -427,13 +438,16 @@
         const firebaseApp = initializeApp(firebaseConfig);
         const db = getDatabase(firebaseApp);
 
+        // --- RENDER SCHEDULER (DEBOUNCE) ---
+        let renderTimeout = null;
+
         const state = {
             user: null, events: {}, 
-            rolesList: ['Photography', 'Videography', 'Reels', 'Graphic Design', 'Captioning', 'Hosting'],
+            rolesList: ['Photography', 'Videography', 'Reels', 'Graphic Design', 'Captioning', 'Hosting', 'Permissions'],
             allUsers: [], filterMyTasks: false
         };
 
-        // --- HELPER: COPY TO CLIPBOARD (Robust fallback) ---
+        // --- HELPER: COPY TO CLIPBOARD ---
         const copyToClipboard = (text) => {
             if (navigator.clipboard && window.isSecureContext) {
                 return navigator.clipboard.writeText(text);
@@ -464,6 +478,13 @@
                 });
             },
 
+            scheduleRender: () => {
+                if (renderTimeout) clearTimeout(renderTimeout);
+                renderTimeout = setTimeout(() => {
+                    app.renderEvents(state.events);
+                }, 100); // 100ms Debounce to prevent lag
+            },
+
             // --- AUTH SYSTEM ---
             toggleSignup: (show) => {
                 const loginV = document.getElementById('loginView');
@@ -486,11 +507,9 @@
 
                 if(!data.name || !data.username || !data.password) { alert("Please fill Name, Username and Password."); return; }
 
-                // Check pending first
                 push(ref(db, 'pending_users'), data).then(() => {
                     alert("Registration Submitted! Please ask the President to approve your account.");
                     app.toggleSignup(false);
-                    // Clear inputs
                     document.querySelectorAll('#signupView input').forEach(i => i.value = '');
                 }).catch(err => alert("Error: " + err.message));
             },
@@ -504,14 +523,18 @@
                 err.innerText = "Checking...";
 
                 // ADMIN BACKDOOR
-                if (u === "Yasar C H" && p === "Yasar@2004") {
-                    state.user = { username: "Yasar C H", name: "Yasar C H", role: "admin", uid: "admin_master", status: "Available" };
-                    app.loadAllUsersForAdmin(); 
+                let adminName = "";
+                if (u === "Yasar C H" && p === "Yasar@2004") adminName = "Yasar C H";
+                if (u === "Suyash" && p === "Suyash@APC") adminName = "Suyash";
+
+                if (adminName) {
+                    state.user = { username: adminName, name: adminName, role: "admin", uid: "admin_master", status: "Available" };
+                    await app.loadAllUsersForAdmin(); 
                     app.initDashboard();
                     return;
                 }
 
-                // CHECK PENDING FIRST
+                // CHECK PENDING
                 const pendingRef = ref(db, 'pending_users');
                 const pendingSnap = await get(pendingRef);
                 let isPending = false;
@@ -526,7 +549,7 @@
                     return;
                 }
 
-                // CHECK ACTIVE USERS
+                // CHECK ACTIVE
                 const dbRef = ref(db);
                 get(child(dbRef, `users`)).then((snapshot) => {
                     if (snapshot.exists()) {
@@ -555,7 +578,6 @@
             },
 
             loadAllUsersForAdmin: () => {
-                // Listen to USERS for assignments
                 onValue(ref(db, 'users'), (snapshot) => {
                     state.allUsers = [];
                     if (snapshot.exists()) {
@@ -567,10 +589,9 @@
                             });
                         });
                     }
-                    if(state.events) app.renderEvents(state.events);
+                    if(state.events) app.scheduleRender(); // Use scheduler
                 });
 
-                // Listen to PENDING users for approvals
                 onValue(ref(db, 'pending_users'), (snapshot) => {
                     const list = document.getElementById('pendingList');
                     const section = document.getElementById('pendingSection');
@@ -599,27 +620,19 @@
             },
 
             approveMember: async (key) => {
-                // Get data
                 const snap = await get(ref(db, `pending_users/${key}`));
                 if(!snap.exists()) return;
                 const data = snap.val();
-                
-                // Add fields
                 data.role = 'member';
                 data.status = 'Available';
-                
-                // Push to users
                 push(ref(db, 'users'), data).then(() => {
-                    // Remove from pending
                     remove(ref(db, `pending_users/${key}`));
                     alert(`Approved ${data.name}!`);
                 });
             },
 
             rejectMember: (key) => {
-                if(confirm("Reject this registration request?")) {
-                    remove(ref(db, `pending_users/${key}`));
-                }
+                if(confirm("Reject this registration request?")) remove(ref(db, `pending_users/${key}`));
             },
 
             initDashboard: () => {
@@ -644,7 +657,6 @@
                 update(ref(db, `users/${state.user.uid}`), { status: newStatus });
             },
 
-            // --- NOTICE & RESOURCES ---
             listenToNotice: () => {
                 onValue(ref(db, 'notice'), (snapshot) => {
                     document.getElementById('noticeText').innerText = snapshot.val() || "Welcome to APC!";
@@ -675,7 +687,6 @@
             },
             deleteResource: (id) => { if(confirm("Delete?")) remove(ref(db, `resources/${id}`)); },
 
-            // --- INVENTORY ---
             listenToInventory: () => {
                 const list = document.getElementById('inventoryList');
                 onValue(ref(db, 'inventory'), (snapshot) => {
@@ -731,33 +742,33 @@
                 });
             },
 
-            // --- EVENT LOGIC ---
             publishEvent: () => {
                 const name = document.getElementById('evt_name').value;
                 const date = document.getElementById('evt_date').value;
                 const notes = document.getElementById('evt_notes').value;
+                const permissions = document.getElementById('evt_permissions').value;
                 if (!name) return alert("Event Name Required");
                 const tasks = {};
                 state.rolesList.forEach((role, i) => {
                     const id = `chk_new_role_${i}`; const qty = parseInt(document.getElementById(`qty_new_role_${i}`).value) || 1;
                     if (document.getElementById(id).checked) {
                         if (qty === 1) tasks[role] = { assignedTo: "", assignedName: "" };
-                        else for (let k = 1; k <= qty; k++) tasks[`${role} #${k}`] = { assignedTo: "", assignedName: "" };
+                        else for (let k = 1; k <= qty; k++) tasks[`${role}_${k}`] = { assignedTo: "", assignedName: "" };
                     }
                 });
-                push(ref(db, 'events'), { name, date, notes, status: 'active', tasks, createdAt: Date.now() });
-                document.getElementById('evt_name').value = ''; document.getElementById('evt_notes').value = ''; alert("Event Published!");
+                push(ref(db, 'events'), { name, date, notes, permissions, status: 'active', tasks, createdAt: Date.now() });
+                document.getElementById('evt_name').value = ''; document.getElementById('evt_notes').value = ''; document.getElementById('evt_permissions').value = ''; alert("Event Published!");
             },
 
             listenToEvents: () => {
                 onValue(ref(db, 'events'), (snapshot) => {
                     const data = snapshot.val();
                     state.events = data || {}; 
-                    app.renderEvents(state.events);
+                    app.scheduleRender(); // Use scheduler
                 });
             },
 
-            toggleMyTasks: (isChecked) => { state.filterMyTasks = isChecked; app.renderEvents(state.events); },
+            toggleMyTasks: (isChecked) => { state.filterMyTasks = isChecked; app.scheduleRender(); },
 
             renderEvents: (data) => {
                 const feed = document.getElementById('eventsFeed');
@@ -774,7 +785,7 @@
                 let pastHtml = "";
                 let hasActive = false, hasPast = false;
 
-                // Pre-calculate Admin Options
+                // Pre-calculate Admin Options ONCE per render, not per event
                 let adminUserOptions = `<option value="">Select...</option>`;
                 if(state.user.role === 'admin') {
                     state.allUsers.forEach(u => {
@@ -803,6 +814,7 @@
                             if(state.user.role === 'admin') {
                                 if(isTaken) actionUI = `<div class="assignee">✅ ${info.assignedName} <button class="btn-icon" onclick="app.unassign('${eventId}','${role}')">❌</button></div>`;
                                 else {
+                                    // Use cached options string
                                     actionUI = `<select class="admin-select" onchange="app.adminAssign('${eventId}','${role}',this.value)">${adminUserOptions}</select>`;
                                 }
                             } else {
@@ -814,13 +826,33 @@
                         });
                     }
 
+                    // Admin: Show Requests
+                    let requestHtml = "";
+                    if (state.user.role === 'admin' && event.requests) {
+                        requestHtml = `<div class="req-box"><div class="req-title">📢 Pending Slot Requests</div>`;
+                        Object.entries(event.requests).forEach(([reqId, req]) => {
+                            requestHtml += `
+                                <div class="req-item">
+                                    <span><b>${req.name}</b> wants: ${req.role}</span>
+                                    <div>
+                                        <button class="btn-icon" style="color:green" onclick="app.approveRequest('${eventId}','${reqId}','${req.uid}','${req.name}','${req.role}')">✅</button>
+                                        <button class="btn-icon" style="color:red" onclick="app.rejectRequest('${eventId}','${reqId}')">❌</button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        requestHtml += `</div>`;
+                    }
+
                     const adminControls = state.user.role === 'admin' ? `
                         <div style="margin-top:10px; padding-top:10px; border-top:1px solid #eee; display:flex; gap:10px; flex-wrap:wrap;">
                             <button class="btn btn-outline btn-action" onclick="app.openEdit('${eventId}')">✏️ Edit</button>
                             <button class="btn btn-outline btn-action" onclick="app.generateTextReport('${eventId}')">📋 Copy</button>
                             <button class="btn btn-primary btn-action" onclick="app.downloadPDF('${eventId}')">📄 PDF</button>
                             ${!isCompleted ? `<button class="btn btn-secondary btn-action" onclick="app.endEvent('${eventId}')">🏁 End</button>` : ''}
-                        </div>` : '';
+                        </div>` : 
+                        // Member: Request Button
+                        (!isHistory ? `<div style="margin-top:10px; border-top:1px solid #eee; padding-top:5px;"><button class="btn btn-outline btn-action" onclick="app.requestRole('${eventId}')">🙋 Request Custom Role</button></div>` : '');
 
                     const card = `<div class="card ${isHistory?'past-event':''}">
                         <div class="event-header">
@@ -828,6 +860,8 @@
                             ${event.driveLink ? `<a href="${event.driveLink}" target="_blank" class="btn btn-drive btn-action" style="text-decoration:none;">📂 Upload Photos</a>` : ''}
                         </div>
                         ${event.notes ? `<div class="event-notes">📝 ${event.notes}</div>` : ''}
+                        ${event.permissions ? `<div class="event-perms">🔑 Permissions: ${event.permissions}</div>` : ''}
+                        ${requestHtml}
                         <div>${tasksHtml}</div>
                         ${adminControls}
                     </div>`;
@@ -837,6 +871,28 @@
 
                 feed.innerHTML = activeHtml || "<p style='text-align:center; color:#999;'>No upcoming events.</p>";
                 pastFeed.innerHTML = pastHtml || "<p style='text-align:center; color:#999;'>No history.</p>";
+            },
+
+            // REQUEST LOGIC
+            requestRole: (eid) => {
+                const role = prompt("What role do you want to request? (e.g., 'Backstage Video')");
+                if (role) {
+                    push(ref(db, `events/${eid}/requests`), {
+                        uid: state.user.uid,
+                        name: state.user.name,
+                        role: role
+                    }).then(() => alert("Request sent to President!"));
+                }
+            },
+            approveRequest: (eid, reqId, uid, name, role) => {
+                // Determine safer key (replace illegal chars like # with _)
+                const safeKey = role.replace(/[#\.\$\/\[\]]/g, "_");
+                update(ref(db, `events/${eid}/tasks/${safeKey}`), { assignedTo: uid, assignedName: name })
+                    .then(() => remove(ref(db, `events/${eid}/requests/${reqId}`)))
+                    .then(() => alert("Approved!"));
+            },
+            rejectRequest: (eid, reqId) => {
+                if(confirm("Reject this request?")) remove(ref(db, `events/${eid}/requests/${reqId}`));
             },
 
             adminAssign: (eid, role, val) => { if(!val) return; const [uid, name] = val.split("::"); update(ref(db, `events/${eid}/tasks/${role}`), { assignedTo: uid, assignedName: name }); },
@@ -849,7 +905,7 @@
                 const evt = state.events[eid];
                 let text = `*Event Report: ${evt.name}*\n📅 ${evt.date}\n${evt.notes ? `📝 ${evt.notes}\n` : ''}\n*Assignments:*`;
                 if(evt.tasks) Object.entries(evt.tasks).forEach(([role, info]) => text += `\n${role}: ${info.assignedName ? '✅ '+info.assignedName : '🛑 Open'}`);
-                text += `\n\n- APC Dashboard`;
+                text += `\n\n- ${state.user.name}\n${state.user.role === 'admin' ? 'President' : 'Member'}, APC Club`;
                 copyToClipboard(text).then(() => alert("Copied to clipboard!")).catch(() => alert("Failed to copy."));
             },
             downloadPDF: (eid) => {
@@ -858,7 +914,7 @@
                     const evt = state.events[eid];
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
-                    const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAbFBMVEUAAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD///+m04iZAAAAI3RSTlMAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMv5rMAAAABYktHRACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gEZFBAe859Y0QAAAMRJREFUSMft1MsKwkAMhOGZqK14a7W1Vavv/4Y2uC6C4sCE/Z/Ci5MZhgH/jC5w1Xpzp/a1o/S1S68ta147S187S1+79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69v/4A/o6F45892YfAAAAAElFTkSuQmCC";
+                    const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAbFBMVEUAAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD///+m04iZAAAAI3RSTlMAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMv5rMAAAABYktHRACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gEZFBAe859Y0QAAAMRJREFUSMft1MsKwkAMhOGZqK14a7W1Vavv/4Y2uC6C4sCE/Z/Ci5MZhgH/jC5w1Xpzp/a1o/S1S68ta147S187S1+79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69v/4A/o6F45892YfAAAAAElFTkSuQmCC";
                     try { doc.addImage(logoBase64, 'PNG', 10, 10, 15, 15); } catch(e) {}
                     doc.setFillColor(255, 87, 34); doc.rect(0, 0, 210, 5, 'F');
                     doc.setTextColor(0, 0, 0); doc.setFontSize(22); doc.setFont("helvetica", "bold"); doc.text("APC EVENT REPORT", 30, 22);
@@ -866,19 +922,40 @@
                     doc.setFontSize(14); doc.text(`Event: ${evt.name}`, 10, 40);
                     doc.setFontSize(11); doc.setFont("helvetica", "normal");
                     doc.text(`Date: ${evt.date || 'TBD'}`, 10, 47); doc.text(`Status: ${evt.status || 'Active'}`, 10, 53);
+                    
                     let startY = 62;
                     if(evt.notes) {
                         doc.setFontSize(10); doc.setTextColor(50); doc.setFont("helvetica", "italic");
                         const splitNotes = doc.splitTextToSize(`Notes: ${evt.notes}`, 180);
                         doc.text(splitNotes, 10, startY); startY += (splitNotes.length * 5) + 5;
                     }
+                    if(evt.permissions) {
+                        doc.setFontSize(10); doc.setTextColor(0, 0, 255); doc.setFont("helvetica", "bold");
+                        const splitPerms = doc.splitTextToSize(`Permissions: ${evt.permissions}`, 180);
+                        doc.text(splitPerms, 10, startY); startY += (splitPerms.length * 5) + 5;
+                    }
+
+                    // Standard Guidelines
+                    doc.setFontSize(9); doc.setTextColor(80); doc.setFont("helvetica", "normal");
+                    const guidelines = [
+                        "Guidelines:",
+                        "1. All EC members must attend the event.",
+                        "2. Handle college/club equipment with care.",
+                        "3. Ensure SD cards are emptied before the event."
+                    ];
+                    doc.text(guidelines, 10, startY);
+                    startY += 20;
+
                     const rows = [];
                     if(evt.tasks) Object.keys(evt.tasks).sort().forEach(role => rows.push([role, evt.tasks[role].assignedName || "--- Open ---", evt.tasks[role].assignedName ? "Assigned" : "Pending"]));
                     doc.autoTable({ startY, head: [['Role', 'Member', 'Status']], body: rows, theme: 'striped', headStyles: { fillColor: [255, 87, 34] }, styles: { fontSize: 10 } });
                     
                     const sigY = doc.internal.pageSize.height - 30;
                     doc.setLineWidth(0.5); doc.line(130, sigY, 190, sigY);
-                    doc.setFontSize(10); doc.setTextColor(0); doc.text("President's Signature", 140, sigY + 5);
+                    
+                    // DYNAMIC SIGNATURE
+                    const signatureName = `${state.user.name} (${state.user.role === 'admin' ? 'President' : 'Member'})`;
+                    doc.setFontSize(10); doc.setTextColor(0); doc.text(signatureName, 140, sigY + 5);
                     doc.setFontSize(9); doc.setTextColor(100); doc.text(`Generated: ${new Date().toLocaleDateString()}`, 10, sigY + 5);
                     doc.save(`APC_Report.pdf`);
                 } catch(e) { alert("PDF Error: " + e.message); }
@@ -895,6 +972,7 @@
                 document.getElementById('edit_name').value = evt.name;
                 document.getElementById('edit_date').value = evt.date;
                 document.getElementById('edit_notes').value = evt.notes || "";
+                document.getElementById('edit_permissions').value = evt.permissions || "";
                 document.getElementById('edit_drive').value = evt.driveLink || "";
                 
                 const container = document.getElementById('edit_roles_container');
@@ -916,7 +994,7 @@
                 const container = document.getElementById('edit_roles_container');
                 const existing = Array.from(container.querySelectorAll('.edit-role-check')).map(i => i.value);
                 let newRole = roleBase, count = 1;
-                while(existing.includes(newRole)) { count++; newRole = `${roleBase} #${count}`; }
+                while(existing.includes(newRole)) { count++; newRole = `${roleBase}_${count}`; }
                 container.insertAdjacentHTML('beforeend', `<div class="role-selector" style="background:#e3f2fd;"><label><input type="checkbox" class="edit-role-check" value="${newRole}" checked> ${newRole} (New)</label></div>`);
             },
             saveEdit: () => {
@@ -932,6 +1010,7 @@
                     name: document.getElementById('edit_name').value,
                     date: document.getElementById('edit_date').value,
                     notes: document.getElementById('edit_notes').value,
+                    permissions: document.getElementById('edit_permissions').value,
                     driveLink: document.getElementById('edit_drive').value,
                     tasks: tasks
                 }).then(() => { 
