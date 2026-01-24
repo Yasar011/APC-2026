@@ -54,6 +54,8 @@
         .btn-danger { background: #ffebee; color: #c62828; }
         .btn-drive { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
         .btn-drive:hover { background: #c8e6c9; }
+        .btn-whatsapp { background: #25D366; color: white; }
+        .btn-whatsapp:hover { background: #128C7E; }
         .btn-action { padding: 4px 8px; font-size: 0.8rem; }
         .btn-icon { background: none; border: none; cursor: pointer; padding: 2px 5px; font-size: 0.9rem; opacity: 0.6; transition: 0.2s; }
         .btn-icon:hover { opacity: 1; transform: scale(1.1); }
@@ -134,6 +136,7 @@
 
         .event-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         .event-date { background: #eee; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; display: inline-block; }
+        .event-time { background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; display: inline-block; margin-left: 5px; }
         .past-badge { background: #ffebee; color: #c62828; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-right: 5px; }
         .completed-badge { background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-right: 5px; }
         .event-notes { background: #fff8e1; border-left: 4px solid #ffc107; padding: 10px; margin-bottom: 5px; font-size: 0.9rem; color: #5d4037; }
@@ -328,6 +331,7 @@
                         <input type="text" id="evt_name" placeholder="Event Name">
                         <input type="date" id="evt_date">
                     </div>
+                    <input type="text" id="evt_report_time" placeholder="Reporting Time (e.g. 9:00 AM or Will inform later)">
                     <textarea id="evt_notes" placeholder="Instructions / Notes (e.g. Dress Code, Meeting Time)"></textarea>
                     <textarea id="evt_permissions" placeholder="Permissions Required (e.g. Principal Approval, HOD Sign, Security Gate Pass)..." style="height:60px;"></textarea>
                     
@@ -355,8 +359,16 @@
             <input type="hidden" id="edit_id">
             <label style="font-size:0.8rem; font-weight:bold;">Event Name</label>
             <input type="text" id="edit_name">
-            <label style="font-size:0.8rem; font-weight:bold;">Date</label>
-            <input type="date" id="edit_date">
+            <div class="grid-2">
+                <div>
+                    <label style="font-size:0.8rem; font-weight:bold;">Date</label>
+                    <input type="date" id="edit_date">
+                </div>
+                <div>
+                    <label style="font-size:0.8rem; font-weight:bold;">Reporting Time</label>
+                    <input type="text" id="edit_report_time">
+                </div>
+            </div>
             <label style="font-size:0.8rem; font-weight:bold;">Instructions / Notes</label>
             <textarea id="edit_notes" placeholder="Notes..."></textarea>
             <label style="font-size:0.8rem; font-weight:bold;">Permissions</label>
@@ -524,7 +536,7 @@
 
                 // ADMIN BACKDOOR
                 let adminName = "";
-                if (u === "Yasar C H" && p === "Yasar@2004") adminName = "Yasar CH"; // Explicitly set to "Yasar CH"
+                if (u === "Yasar C H" && p === "Yasar@2004") adminName = "Yasar CH"; 
                 if (u === "Suyash" && p === "Suyash@APC") adminName = "Suyash";
 
                 if (adminName) {
@@ -745,6 +757,7 @@
             publishEvent: () => {
                 const name = document.getElementById('evt_name').value;
                 const date = document.getElementById('evt_date').value;
+                const reportTime = document.getElementById('evt_report_time').value || "Will update later";
                 const notes = document.getElementById('evt_notes').value;
                 const permissions = document.getElementById('evt_permissions').value;
                 if (!name) return alert("Event Name Required");
@@ -756,8 +769,8 @@
                         else for (let k = 1; k <= qty; k++) tasks[`${role}_${k}`] = { assignedTo: "", assignedName: "" };
                     }
                 });
-                push(ref(db, 'events'), { name, date, notes, permissions, status: 'active', tasks, createdAt: Date.now() });
-                document.getElementById('evt_name').value = ''; document.getElementById('evt_notes').value = ''; document.getElementById('evt_permissions').value = ''; alert("Event Published!");
+                push(ref(db, 'events'), { name, date, reportTime, notes, permissions, status: 'active', tasks, createdAt: Date.now() });
+                document.getElementById('evt_name').value = ''; document.getElementById('evt_notes').value = ''; document.getElementById('evt_permissions').value = ''; document.getElementById('evt_report_time').value = ''; alert("Event Published!");
             },
 
             listenToEvents: () => {
@@ -844,9 +857,20 @@
                         requestHtml += `</div>`;
                     }
 
+                    // WHATSAPP BUTTON LOGIC
+                    let waText = `*APC Event Update*\nEvent: ${event.name}\nDate: ${event.date}\nTime: ${event.reportTime}\n${event.notes ? 'Note: '+event.notes : ''}\n\n*Assignments:*`;
+                    if(event.tasks) {
+                        Object.entries(event.tasks).forEach(([role, info]) => {
+                            waText += `\n${role}: ${info.assignedName ? info.assignedName : 'Open'}`;
+                        });
+                    }
+                    waText += `\n\n- ${state.user.name} (APC President)`;
+                    const waLink = `https://wa.me/?text=${encodeURIComponent(waText)}`;
+
                     const adminControls = state.user.role === 'admin' ? `
                         <div style="margin-top:10px; padding-top:10px; border-top:1px solid #eee; display:flex; gap:10px; flex-wrap:wrap;">
                             <button class="btn btn-outline btn-action" onclick="app.openEdit('${eventId}')">✏️ Edit</button>
+                            <a href="${waLink}" target="_blank" class="btn btn-whatsapp btn-action" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px;">📱 Share WA</a>
                             <button class="btn btn-outline btn-action" onclick="app.generateTextReport('${eventId}')">📋 Copy</button>
                             <button class="btn btn-primary btn-action" onclick="app.downloadPDF('${eventId}')">📄 PDF</button>
                             ${!isCompleted ? `<button class="btn btn-secondary btn-action" onclick="app.endEvent('${eventId}')">🏁 End</button>` : ''}
@@ -856,7 +880,7 @@
 
                     const card = `<div class="card ${isHistory?'past-event':''}">
                         <div class="event-header">
-                            <div>${isCompleted ? '<span class="completed-badge">Finished</span>' : (isPastDate ? '<span class="past-badge">Past Date</span>' : '')}<h3 style="margin:0; display:inline-block; vertical-align:middle;">${event.name}</h3><div style="margin-top:5px;"><span class="event-date">${event.date || 'TBD'}</span></div></div>
+                            <div>${isCompleted ? '<span class="completed-badge">Finished</span>' : (isPastDate ? '<span class="past-badge">Past Date</span>' : '')}<h3 style="margin:0; display:inline-block; vertical-align:middle;">${event.name}</h3><div style="margin-top:5px;"><span class="event-date">${event.date || 'TBD'}</span><span class="event-time" style="background:#eee; padding:4px 10px; border-radius:4px; font-size:0.85rem; font-weight:600; margin-left:5px;">🕒 ${event.reportTime || 'TBD'}</span></div></div>
                             ${event.driveLink ? `<a href="${event.driveLink}" target="_blank" class="btn btn-drive btn-action" style="text-decoration:none;">📂 Upload Photos</a>` : ''}
                         </div>
                         ${event.notes ? `<div class="event-notes">📝 ${event.notes}</div>` : ''}
@@ -903,7 +927,7 @@
             // REPORTING
             generateTextReport: (eid) => {
                 const evt = state.events[eid];
-                let text = `*Event Report: ${evt.name}*\n📅 ${evt.date}\n${evt.notes ? `📝 ${evt.notes}\n` : ''}\n*Assignments:*`;
+                let text = `*Event Report: ${evt.name}*\n📅 ${evt.date}\n🕒 Reporting Time: ${evt.reportTime || 'TBD'}\n${evt.notes ? `📝 ${evt.notes}\n` : ''}\n*Assignments:*`;
                 if(evt.tasks) Object.entries(evt.tasks).forEach(([role, info]) => text += `\n${role}: ${info.assignedName ? '✅ '+info.assignedName : '🛑 Open'}`);
                 text += `\n\n- ${state.user.name}\n${state.user.role === 'admin' ? 'President' : 'Member'}, APC Club`;
                 copyToClipboard(text).then(() => alert("Copied to clipboard!")).catch(() => alert("Failed to copy."));
@@ -914,14 +938,15 @@
                     const evt = state.events[eid];
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
-                    const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAbFBMVEUAAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD///+m04iZAAAAI3RSTlMAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMv5rMAAAABYktHRACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gEZFBAe859Y0QAAAMRJREFUSMft1MsKwkAMhOGZqK14a7W1Vavv/4Y2uC6C4sCE/Z/Ci5MZhgH/jC5w1Xpzp/a1o/S1S68ta147S187S1+79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69v/4A/o6F45892YfAAAAAElFTkSuQmCC";
+                    const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAbFBMVEUAAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD///+m04iZAAAAI3RSTlMAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMv5rMAAAABYktHRACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gEZFBAe859Y0QAAAMRJREFUSMft1MsKwkAMhOGZqK14a7W1Vavv/4Y2uC6C4sCE/Z/Ci5MZhgH/jC5w1Xpzp/a1o/S1S68ta147S187S1+79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69v/4A/o6F45892YfAAAAAElFTkSuQmCC";
                     try { doc.addImage(logoBase64, 'PNG', 10, 10, 15, 15); } catch(e) {}
                     doc.setFillColor(255, 87, 34); doc.rect(0, 0, 210, 5, 'F');
                     doc.setTextColor(0, 0, 0); doc.setFontSize(22); doc.setFont("helvetica", "bold"); doc.text("APC EVENT REPORT", 30, 22);
                     doc.setLineWidth(0.5); doc.line(10, 30, 200, 30);
                     doc.setFontSize(14); doc.text(`Event: ${evt.name}`, 10, 40);
                     doc.setFontSize(11); doc.setFont("helvetica", "normal");
-                    doc.text(`Date: ${evt.date || 'TBD'}`, 10, 47); doc.text(`Status: ${evt.status || 'Active'}`, 10, 53);
+                    doc.text(`Date: ${evt.date || 'TBD'}`, 10, 47); doc.text(`Time: ${evt.reportTime || 'TBD'}`, 100, 47); 
+                    doc.text(`Status: ${evt.status || 'Active'}`, 10, 53);
                     
                     let startY = 62;
                     if(evt.notes) {
@@ -977,6 +1002,7 @@
                 document.getElementById('edit_id').value = eid;
                 document.getElementById('edit_name').value = evt.name;
                 document.getElementById('edit_date').value = evt.date;
+                document.getElementById('edit_report_time').value = evt.reportTime || "";
                 document.getElementById('edit_notes').value = evt.notes || "";
                 document.getElementById('edit_permissions').value = evt.permissions || "";
                 document.getElementById('edit_drive').value = evt.driveLink || "";
@@ -1015,6 +1041,7 @@
                 update(ref(db, `events/${id}`), {
                     name: document.getElementById('edit_name').value,
                     date: document.getElementById('edit_date').value,
+                    reportTime: document.getElementById('edit_report_time').value,
                     notes: document.getElementById('edit_notes').value,
                     permissions: document.getElementById('edit_permissions').value,
                     driveLink: document.getElementById('edit_drive').value,
