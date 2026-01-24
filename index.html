@@ -6,6 +6,10 @@
     <title>APC Command Center</title>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <!-- PDF Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <style>
         :root {
             --primary: #FF5722; /* APC Orange */
@@ -47,11 +51,13 @@
         .btn-secondary { background: #e0e0e0; color: #333; }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
         .btn-danger { background: #ffebee; color: #c62828; }
+        .btn-drive { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+        .btn-drive:hover { background: #c8e6c9; }
         .btn-action { padding: 4px 8px; font-size: 0.8rem; }
         .btn-icon { background: none; border: none; cursor: pointer; padding: 2px 5px; font-size: 0.8rem; opacity: 0.6; transition: 0.2s; }
         .btn-icon:hover { opacity: 1; transform: scale(1.1); }
 
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 12px;
             border: 1px solid var(--border);
@@ -62,7 +68,8 @@
             margin-bottom: 10px;
             background: #fafafa;
         }
-        input:focus { outline: 2px solid var(--primary); border-color: transparent; }
+        input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); border-color: transparent; }
+        textarea { resize: vertical; min-height: 60px; }
         
         /* Admin Specific Select */
         .admin-select {
@@ -73,6 +80,51 @@
             width: auto;
             min-width: 150px;
         }
+
+        /* Header Status Select */
+        .status-select {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+            background: white;
+            width: auto;
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+
+        /* Notice Board */
+        .notice-board {
+            background: #fff3cd;
+            color: #856404;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ffeeba;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeIn 0.5s;
+        }
+        .notice-content { font-weight: 500; display: flex; align-items: center; gap: 10px; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Inventory & Resource Items */
+        .inv-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            background: white;
+        }
+        .inv-status-avail { color: var(--success); font-weight: bold; font-size: 0.85rem; background: #e8f5e9; padding: 2px 8px; border-radius: 4px; }
+        .inv-status-out { color: #d32f2f; font-weight: bold; font-size: 0.85rem; background: #ffebee; padding: 2px 8px; border-radius: 4px; }
+
+        .resource-link { color: var(--primary); text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        .resource-link:hover { text-decoration: underline; }
 
         /* --- LOGIN PAGE --- */
         .login-container {
@@ -92,23 +144,23 @@
             text-align: center;
         }
         .login-logo {
-            width: 60px;
-            height: 60px;
-            background: var(--primary);
+            width: 80px;
+            height: 80px;
+            background: white;
             border-radius: 50%;
             margin: 0 auto 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: 800;
-            font-size: 1.5rem;
+            overflow: hidden;
+            border: 4px solid rgba(255,255,255,0.3);
         }
+        .login-logo img { width: 100%; height: 100%; object-fit: cover; }
 
         /* --- APP LAYOUT --- */
         header {
             background-color: white;
-            padding: 1rem 2rem;
+            padding: 0.8rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -118,7 +170,9 @@
             z-index: 100;
         }
         .brand { font-weight: 800; font-size: 1.4rem; color: var(--primary); display: flex; align-items: center; gap: 10px; }
-        .user-info { display: flex; align-items: center; gap: 15px; font-size: 0.9rem; font-weight: 500; }
+        .brand img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        
+        .user-info { display: flex; align-items: center; gap: 5px; font-size: 0.9rem; font-weight: 500; }
 
         .container {
             max-width: 900px;
@@ -155,8 +209,8 @@
             position: relative;
         }
         .card.past-event {
-            opacity: 0.7;
-            background: #fdfdfd;
+            opacity: 0.8;
+            background: #fafafa;
             border-left: 5px solid #ccc;
         }
         .card-title { margin-top: 0; color: var(--text-main); font-size: 1.2rem; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
@@ -168,6 +222,15 @@
         .event-date { background: #eee; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; display: inline-block; }
         .past-badge { background: #ffebee; color: #c62828; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-right: 5px; }
         .completed-badge { background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-right: 5px; }
+        
+        .event-notes {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #5d4037;
+        }
 
         .task-row {
             display: flex;
@@ -184,9 +247,19 @@
         .role-badge { font-weight: 700; font-size: 0.9rem; color: #444; }
         .assignee { font-size: 0.85rem; color: var(--success); font-weight: 600; display: flex; align-items: center; gap: 5px; }
         
-        /* Checkbox Grid */
-        .checkbox-group { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-        .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer; }
+        /* Checkbox Grid with Quantities */
+        .role-selector {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f9f9f9;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #eee;
+        }
+        .role-selector label { font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 8px; cursor: pointer; flex-grow: 1; }
+        .qty-input { width: 60px; padding: 5px; margin: 0; text-align: center; font-weight: bold; height: auto; border: 1px solid #ddd; }
 
         /* Stats Table */
         .stats-table { width: 100%; border-collapse: collapse; }
@@ -207,6 +280,45 @@
             background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px;
             max-height: 90vh; overflow-y: auto;
         }
+        
+        /* Section Divider */
+        .section-divider {
+            display: flex; 
+            align-items: center; 
+            margin: 40px 0 20px; 
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .section-divider::before, .section-divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+            margin: 0 15px;
+        }
+
+        /* Filter Toggle */
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+        .filter-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            user-select: none;
+        }
+        .filter-toggle input { width: auto; margin: 0; }
+        .filter-toggle:hover { background: #f9f9f9; }
 
     </style>
 </head>
@@ -215,7 +327,9 @@
     <!-- === VIEW 1: LOGIN PAGE === -->
     <div id="loginView" class="login-container">
         <div class="login-card">
-            <div class="login-logo">APC</div>
+            <div class="login-logo">
+                <img src="https://cdn-icons-png.flaticon.com/512/3176/3176371.png" alt="Logo">
+            </div>
             <h2 style="margin-top:0;">Welcome Back</h2>
             <p style="color:var(--text-muted); margin-bottom:20px;">Sign in to APC Dashboard</p>
             
@@ -230,20 +344,42 @@
     <!-- === VIEW 2: MAIN DASHBOARD === -->
     <div id="dashboardView" class="hidden">
         <header>
-            <div class="brand"><div class="login-logo" style="width:30px; height:30px; font-size:0.8rem; margin:0;">A</div> APC Club</div>
+            <div class="brand">
+                <img src="https://cdn-icons-png.flaticon.com/512/3176/3176371.png" alt="Logo">
+                APC Club
+            </div>
             <div class="user-info">
-                <span id="displayUserName">User</span>
+                <!-- Status Selector -->
+                <select id="userStatus" class="status-select" onchange="app.updateStatus(this.value)">
+                    <option value="Available">🟢 Available</option>
+                    <option value="Busy">🔴 Busy / Exams</option>
+                    <option value="Not in Clg">⛔ Not in Clg</option>
+                </select>
+                
+                <span id="displayUserName" style="margin-right:10px;">User</span>
                 <button class="btn btn-danger" onclick="app.logout()" style="padding: 5px 12px; font-size:0.8rem;">Logout</button>
             </div>
         </header>
 
         <div class="container">
+
+            <!-- NOTICE BOARD -->
+            <div id="noticeBoard" class="notice-board hidden">
+                <div class="notice-content">
+                    📢 <span id="noticeText">Welcome to APC Dashboard</span>
+                </div>
+                <button id="editNoticeBtn" class="btn-icon hidden" onclick="app.editNotice()" title="Edit Notice">✏️</button>
+            </div>
             
-            <!-- ADMIN ONLY TABS -->
-            <div id="adminTabs" class="tabs hidden">
+            <!-- TABS -->
+            <div id="tabsContainer" class="tabs">
                 <button class="tab-btn active" data-tab="events" onclick="app.switchTab('events')">Manage Events</button>
-                <button class="tab-btn" data-tab="stats" onclick="app.switchTab('stats')">🏆 Performance Stats</button>
-                <button class="tab-btn" data-tab="members" onclick="app.switchTab('members')">Add Members</button>
+                <button class="tab-btn" data-tab="resources" onclick="app.switchTab('resources')">📂 Resources</button>
+                
+                <!-- Admin Only Tabs -->
+                <button class="tab-btn admin-only hidden" data-tab="stats" onclick="app.switchTab('stats')">🏆 Stats</button>
+                <button class="tab-btn admin-only hidden" data-tab="inventory" onclick="app.switchTab('inventory')">📦 Inventory</button>
+                <button class="tab-btn admin-only hidden" data-tab="members" onclick="app.switchTab('members')">Members</button>
             </div>
 
             <!-- TAB 1: MEMBERS -->
@@ -264,6 +400,14 @@
                     <input type="text" id="new_password" placeholder="Password">
                 </div>
                 <button class="btn btn-primary" onclick="app.createMember()">Create Member Account</button>
+
+                <!-- NEW MEMBER DIRECTORY -->
+                <div style="margin-top: 40px; border-top: 2px solid #eee; padding-top: 20px;">
+                    <h3 style="margin-top:0; color:var(--text-main);">👥 Member Directory</h3>
+                    <div id="membersList" style="margin-top:15px;">
+                        <p>Loading members...</p>
+                    </div>
+                </div>
             </div>
 
             <!-- TAB 2: STATS -->
@@ -273,31 +417,70 @@
                 <div id="statsContent">Loading...</div>
             </div>
 
-            <!-- TAB 3: EVENTS (DEFAULT) -->
+            <!-- TAB 3: INVENTORY -->
+            <div id="inventoryPanel" class="card hidden">
+                <h3 class="card-title">📦 Equipment Tracker</h3>
+                <div style="display:flex; gap:10px; margin-bottom:20px;">
+                    <input type="text" id="inv_item_name" placeholder="Item Name (e.g. Sony A7III)" style="margin-bottom:0;">
+                    <button class="btn btn-primary" onclick="app.addInventoryItem()">Add</button>
+                </div>
+                <div id="inventoryList">
+                    <p>Loading gear...</p>
+                </div>
+            </div>
+
+            <!-- TAB 4: RESOURCES -->
+            <div id="resourcesPanel" class="card hidden">
+                <h3 class="card-title">📂 Club Resources</h3>
+                <div class="admin-only hidden" style="background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:20px;">
+                    <p style="font-weight:bold; margin-top:0; font-size:0.9rem;">Add New Link (Admin Only)</p>
+                    <div class="grid-2">
+                        <input type="text" id="res_name" placeholder="Resource Name (e.g. Club Logo PNG)">
+                        <input type="text" id="res_link" placeholder="URL (Google Drive, etc)">
+                    </div>
+                    <button class="btn btn-primary" onclick="app.addResource()">Add Link</button>
+                </div>
+                <div id="resourcesList">
+                    <p>Loading resources...</p>
+                </div>
+            </div>
+
+            <!-- TAB 5: EVENTS (DEFAULT) -->
             <div id="eventsPanel">
                 <!-- Create Event (Admin Only) -->
-                <div id="createEventBox" class="card hidden" style="border-left: 5px solid var(--primary);">
+                <div id="createEventBox" class="card admin-only hidden" style="border-left: 5px solid var(--primary);">
                     <h3 class="card-title">📅 Create New Event</h3>
                     <div class="grid-2">
                         <input type="text" id="evt_name" placeholder="Event Name">
                         <input type="date" id="evt_date">
                     </div>
-                    <p style="font-size:0.9rem; font-weight:600;">Required Roles:</p>
-                    <div class="checkbox-group">
-                        <label class="checkbox-label"><input type="checkbox" id="role_photo" checked> Photography</label>
-                        <label class="checkbox-label"><input type="checkbox" id="role_video" checked> Videography</label>
-                        <label class="checkbox-label"><input type="checkbox" id="role_reels"> Reels</label>
-                        <label class="checkbox-label"><input type="checkbox" id="role_graphic"> Graphic Design</label>
-                        <label class="checkbox-label"><input type="checkbox" id="role_caption"> Captioning</label>
-                        <label class="checkbox-label"><input type="checkbox" id="role_hosting"> Hosting</label>
+                    <textarea id="evt_notes" placeholder="Instructions / Notes (e.g. Dress Code, Meeting Time)"></textarea>
+                    
+                    <p style="font-size:0.9rem; font-weight:600; margin-bottom:5px;">Select Roles & Quantities:</p>
+                    
+                    <div id="roleCreatorList">
+                        <!-- Populated via JS -->
                     </div>
-                    <button class="btn btn-primary" onclick="app.publishEvent()">Publish Event</button>
+
+                    <button class="btn btn-primary" onclick="app.publishEvent()" style="margin-top:15px;">Publish Event</button>
                 </div>
 
-                <!-- Event List -->
-                <h3 style="margin: 30px 0 15px;">Events Feed</h3>
+                <!-- Upcoming Events List -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin: 30px 0 15px;">
+                    <h3 style="margin:0;">🔥 Upcoming Events</h3>
+                    <label class="filter-toggle">
+                        <input type="checkbox" onchange="app.toggleMyTasks(this.checked)"> Show My Tasks Only
+                    </label>
+                </div>
+
                 <div id="eventsFeed">
                     <p style="text-align:center; color:#888;">Loading...</p>
+                </div>
+
+                <!-- Past Events List -->
+                <div class="section-divider">Past Events / History</div>
+                <div id="pastFeed">
+                    <p style="text-align:center; color:#888;">No history yet.</p>
                 </div>
             </div>
 
@@ -313,10 +496,18 @@
             <input type="text" id="edit_name">
             <label style="font-size:0.8rem; font-weight:bold;">Date</label>
             <input type="date" id="edit_date">
+
+            <label style="font-size:0.8rem; font-weight:bold;">Instructions / Notes</label>
+            <textarea id="edit_notes" placeholder="Notes..."></textarea>
             
-            <p style="font-size:0.9rem; font-weight:600; margin-top:15px;">Manage Roles:</p>
-            <p style="font-size:0.8rem; color:#666;">Unchecking a role will remove the slot (and any assignee).</p>
-            <div class="checkbox-group" id="edit_roles_container">
+            <div style="margin-top:10px; background:#e8f5e9; padding:10px; border-radius:8px; border:1px solid #c8e6c9;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#2e7d32;">📂 Google Drive / Photos Link</label>
+                <input type="text" id="edit_drive" placeholder="Paste link to upload photos..." style="margin-bottom:0;">
+            </div>
+            
+            <p style="font-size:0.9rem; font-weight:600; margin-top:15px;">Manage Existing Slots:</p>
+            <p style="font-size:0.8rem; color:#666;">Unchecking a role will remove that specific slot.</p>
+            <div id="edit_roles_container">
                 <!-- Populated dynamically -->
             </div>
             
@@ -351,13 +542,27 @@
             user: null, 
             events: {}, 
             rolesList: ['Photography', 'Videography', 'Reels', 'Graphic Design', 'Captioning', 'Hosting'],
-            allUsers: [] // For Admin Dropdown
+            allUsers: [],
+            filterMyTasks: false
         };
 
         // --- APP CONTROLLER ---
         window.app = {
             
-            // 1. LOGIN
+            // 1. INIT & LOGIN
+            init: () => {
+                const container = document.getElementById('roleCreatorList');
+                state.rolesList.forEach((role, i) => {
+                    const id = `new_role_${i}`;
+                    container.innerHTML += `
+                        <div class="role-selector">
+                            <label><input type="checkbox" id="chk_${id}" ${i<2 ? 'checked' : ''}> ${role}</label>
+                            <input type="number" id="qty_${id}" class="qty-input" value="1" min="1">
+                        </div>
+                    `;
+                });
+            },
+
             login: async () => {
                 const u = document.getElementById('loginUser').value.trim();
                 const p = document.getElementById('loginPass').value.trim();
@@ -368,13 +573,12 @@
 
                 // ADMIN BACKDOOR
                 if (u === "Yasar C H" && p === "Yasar@2004") {
-                    state.user = { username: "Yasar C H", name: "Yasar C H", role: "admin", uid: "admin_master" };
-                    await app.loadAllUsersForAdmin(); // Fetch users immediately
+                    state.user = { username: "Yasar C H", name: "Yasar C H", role: "admin", uid: "admin_master", status: "Available" };
+                    await app.loadAllUsersForAdmin(); 
                     app.initDashboard();
                     return;
                 }
 
-                // DATABASE CHECK
                 const dbRef = ref(db);
                 get(child(dbRef, `users`)).then((snapshot) => {
                     if (snapshot.exists()) {
@@ -402,281 +606,445 @@
                 });
             },
 
-            // Fetch users for Dropdown
             loadAllUsersForAdmin: async () => {
                 const dbRef = ref(db);
-                const snapshot = await get(child(dbRef, 'users'));
-                state.allUsers = [];
-                if (snapshot.exists()) {
-                    snapshot.forEach(childSnap => {
-                        state.allUsers.push({
-                            uid: childSnap.key,
-                            name: childSnap.val().name
+                // We use onValue here so Admin sees real-time status updates from users
+                onValue(ref(db, 'users'), (snapshot) => {
+                    state.allUsers = [];
+                    if (snapshot.exists()) {
+                        snapshot.forEach(childSnap => {
+                            state.allUsers.push({
+                                uid: childSnap.key,
+                                name: childSnap.val().name,
+                                status: childSnap.val().status || "Available"
+                            });
                         });
-                    });
-                }
+                    }
+                    // Refresh events to show new status in dropdowns if events are loaded
+                    if(state.events) app.renderEvents(state.events);
+                });
             },
 
-            // 2. DASHBOARD
             initDashboard: () => {
                 document.getElementById('loginView').classList.add('hidden');
                 document.getElementById('dashboardView').classList.remove('hidden');
                 document.getElementById('displayUserName').innerText = `${state.user.name}`;
+                
+                // Set initial status dropdown value
+                document.getElementById('userStatus').value = state.user.status || 'Available';
 
+                // Notice Board Logic
+                document.getElementById('noticeBoard').classList.remove('hidden');
+                app.listenToNotice();
+
+                // Visibility logic
                 if (state.user.role === 'admin') {
-                    document.getElementById('adminTabs').classList.remove('hidden');
-                    document.getElementById('createEventBox').classList.remove('hidden');
+                    document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
                 } else {
-                    document.getElementById('adminTabs').classList.add('hidden');
-                    document.getElementById('createEventBox').classList.add('hidden');
+                    document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
                 }
+                
                 app.listenToEvents();
             },
 
             logout: () => location.reload(),
 
+            // --- STATUS LOGIC ---
+            updateStatus: (newStatus) => {
+                if(state.user.uid === 'admin_master') return; // Master admin doesn't sync
+                update(ref(db, `users/${state.user.uid}`), { status: newStatus })
+                    .then(() => console.log("Status updated to", newStatus));
+            },
+
+            // --- NOTICE BOARD ---
+            listenToNotice: () => {
+                onValue(ref(db, 'notice'), (snapshot) => {
+                    const txt = snapshot.val();
+                    document.getElementById('noticeText').innerText = txt || "Welcome to APC!";
+                });
+            },
+            editNotice: () => {
+                const current = document.getElementById('noticeText').innerText;
+                const newTxt = prompt("Update Notice Board Message:", current);
+                if(newTxt) set(ref(db, 'notice'), newTxt);
+            },
+
+            // --- RESOURCES ---
+            listenToResources: () => {
+                const list = document.getElementById('resourcesList');
+                onValue(ref(db, 'resources'), (snapshot) => {
+                    const items = snapshot.val();
+                    if(!items) { list.innerHTML = "No resources added."; return; }
+                    
+                    let html = "";
+                    Object.entries(items).forEach(([id, item]) => {
+                        html += `
+                            <div class="inv-item">
+                                <a href="${item.link}" target="_blank" class="resource-link">🔗 ${item.name}</a>
+                                ${state.user.role === 'admin' ? `<button class="btn-icon" onclick="app.deleteResource('${id}')">🗑️</button>` : ''}
+                            </div>
+                        `;
+                    });
+                    list.innerHTML = html;
+                });
+            },
+            addResource: () => {
+                const name = document.getElementById('res_name').value;
+                const link = document.getElementById('res_link').value;
+                if(!name || !link) return;
+                push(ref(db, 'resources'), { name: name, link: link });
+                document.getElementById('res_name').value = '';
+                document.getElementById('res_link').value = '';
+            },
+            deleteResource: (id) => {
+                if(confirm("Delete this resource link?")) remove(ref(db, `resources/${id}`));
+            },
+
+            // --- INVENTORY ---
+            listenToInventory: () => {
+                const list = document.getElementById('inventoryList');
+                onValue(ref(db, 'inventory'), (snapshot) => {
+                    const items = snapshot.val();
+                    if(!items) { list.innerHTML = "No items in inventory."; return; }
+                    
+                    let html = "";
+                    Object.entries(items).forEach(([id, item]) => {
+                        let statusUI = "";
+                        if(item.status === 'out') {
+                            statusUI = `<span class="inv-status-out">Held by ${item.holder}</span>`;
+                            if(state.user.role === 'admin') {
+                                statusUI += `<button class="btn btn-outline btn-action" style="margin-left:10px;" onclick="app.invReturn('${id}')">Return</button>`;
+                            }
+                        } else {
+                            statusUI = `<span class="inv-status-avail">Available</span>`;
+                            if(state.user.role === 'admin') {
+                                statusUI += `<button class="btn btn-primary btn-action" style="margin-left:10px;" onclick="app.invCheckout('${id}')">Check Out</button>`;
+                            }
+                        }
+                        
+                        html += `
+                            <div class="inv-item">
+                                <div><strong>${item.name}</strong></div>
+                                <div>
+                                    ${statusUI}
+                                    ${state.user.role === 'admin' ? `<button class="btn-icon" onclick="app.invDelete('${id}')" style="margin-left:10px;">🗑️</button>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    list.innerHTML = html;
+                });
+            },
+            addInventoryItem: () => {
+                const name = document.getElementById('inv_item_name').value;
+                if(!name) return;
+                push(ref(db, 'inventory'), { name: name, status: 'in', holder: '' });
+                document.getElementById('inv_item_name').value = '';
+            },
+            invCheckout: (id) => {
+                const person = prompt("Who is taking this item?");
+                if(person) update(ref(db, `inventory/${id}`), { status: 'out', holder: person });
+            },
+            invReturn: (id) => {
+                if(confirm("Is this item back in inventory?")) update(ref(db, `inventory/${id}`), { status: 'in', holder: '' });
+            },
+            invDelete: (id) => {
+                if(confirm("Remove this item?")) remove(ref(db, `inventory/${id}`));
+            },
+
             // 3. EVENT LOGIC
             publishEvent: () => {
                 const name = document.getElementById('evt_name').value;
                 const date = document.getElementById('evt_date').value;
+                const notes = document.getElementById('evt_notes').value;
                 if (!name) return alert("Event Name Required");
 
                 const tasks = {};
-                const ids = ['role_photo', 'role_video', 'role_reels', 'role_graphic', 'role_caption', 'role_hosting'];
-                const names = state.rolesList;
+                state.rolesList.forEach((role, i) => {
+                    const id = `new_role_${i}`;
+                    const isChecked = document.getElementById(`chk_${id}`).checked;
+                    const qty = parseInt(document.getElementById(`qty_${id}`).value) || 1;
 
-                ids.forEach((id, index) => {
-                    if (document.getElementById(id).checked) {
-                        tasks[names[index]] = { assignedTo: "", assignedName: "" };
+                    if (isChecked) {
+                        if (qty === 1) tasks[role] = { assignedTo: "", assignedName: "" };
+                        else {
+                            for (let k = 1; k <= qty; k++) tasks[`${role} #${k}`] = { assignedTo: "", assignedName: "" };
+                        }
                     }
                 });
 
                 push(ref(db, 'events'), {
                     name: name,
                     date: date,
-                    status: 'active', // New Field
+                    notes: notes,
+                    status: 'active',
                     tasks: tasks,
                     createdAt: Date.now()
                 });
+                
                 document.getElementById('evt_name').value = '';
+                document.getElementById('evt_notes').value = '';
                 alert("Event Published!");
             },
 
             listenToEvents: () => {
-                const feed = document.getElementById('eventsFeed');
                 onValue(ref(db, 'events'), (snapshot) => {
-                    feed.innerHTML = "";
                     const data = snapshot.val();
                     state.events = data || {}; 
-                    
-                    if(!data) { feed.innerHTML = "<p style='text-align:center'>No events yet.</p>"; return; }
-
-                    const eventsArr = Object.entries(data).reverse();
-                    
-                    eventsArr.forEach(([eventId, event]) => {
-                        let tasksHtml = "";
-                        
-                        // Check Status
-                        const isCompleted = event.status === 'completed';
-                        const isPastDate = event.date && new Date(event.date) < new Date(new Date().setHours(0,0,0,0));
-                        
-                        // Styling classes
-                        const pastClass = (isPastDate || isCompleted) ? 'past-event' : '';
-                        let badge = "";
-                        if (isCompleted) badge = '<span class="completed-badge">Finished</span>';
-                        else if (isPastDate) badge = '<span class="past-badge">Past Date</span>';
-
-                        // Render Tasks
-                        if(event.tasks) {
-                            Object.entries(event.tasks).forEach(([role, info]) => {
-                                const isTaken = info.assignedTo ? true : false;
-                                let actionUI = "";
-                                
-                                // === ADMIN VIEW ===
-                                if(state.user.role === 'admin') {
-                                    if(isTaken) {
-                                        // Show Name + Remove Button
-                                        actionUI = `
-                                            <div class="assignee">
-                                                ✅ ${info.assignedName}
-                                                <button class="btn-icon" onclick="app.unassign('${eventId}', '${role}')" title="Unassign Member">❌</button>
-                                            </div>`;
-                                    } else {
-                                        // Show Dropdown
-                                        let options = `<option value="">Select Member...</option>`;
-                                        state.allUsers.forEach(u => {
-                                            options += `<option value="${u.uid}::${u.name}">${u.name}</option>`;
-                                        });
-                                        actionUI = `
-                                            <select class="admin-select" onchange="app.adminAssign('${eventId}', '${role}', this.value)">
-                                                ${options}
-                                            </select>
-                                        `;
-                                    }
-                                } 
-                                // === MEMBER VIEW ===
-                                else {
-                                    if (isTaken) {
-                                        actionUI = `<div class="assignee">✅ ${info.assignedName}</div>`;
-                                    } else {
-                                        // Disable claiming if completed/past
-                                        if(isCompleted || isPastDate) actionUI = `<span style="color:#999; font-size:0.8rem;">Closed</span>`;
-                                        else actionUI = `<button class="btn btn-primary" style="padding:5px 10px; font-size:0.8rem;" onclick="app.claim('${eventId}', '${role}')">Claim</button>`;
-                                    }
-                                }
-
-                                tasksHtml += `
-                                    <div class="task-row ${isTaken ? 'taken' : ''}">
-                                        <div class="role-badge">${role}</div>
-                                        ${actionUI}
-                                    </div>
-                                `;
-                            });
-                        }
-
-                        // Admin Controls Footer
-                        let adminControls = "";
-                        if(state.user.role === 'admin') {
-                            let endBtn = "";
-                            if (!isCompleted) {
-                                endBtn = `<button class="btn btn-secondary btn-action" onclick="app.endEvent('${eventId}')">🏁 End Event</button>`;
-                            }
-
-                            adminControls = `
-                                <div style="margin-top:10px; padding-top:10px; border-top:1px solid #eee; display:flex; gap:10px; flex-wrap:wrap;">
-                                    <button class="btn btn-outline btn-action" onclick="app.openEdit('${eventId}')">✏️ Edit</button>
-                                    <button class="btn btn-outline btn-action" onclick="app.generateReport('${eventId}')">📋 Report</button>
-                                    ${endBtn}
-                                </div>
-                            `;
-                        }
-
-                        const card = `
-                            <div class="card ${pastClass}">
-                                <div class="event-header">
-                                    <div>
-                                        ${badge}
-                                        <h3 style="margin:0; display:inline-block; vertical-align:middle;">${event.name}</h3>
-                                        <div style="margin-top:5px;">
-                                            <span class="event-date">${event.date || 'TBD'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>${tasksHtml}</div>
-                                ${adminControls}
-                            </div>
-                        `;
-                        feed.innerHTML += card;
-                    });
+                    app.renderEvents(state.events);
                 });
             },
 
-            // --- ADMIN ACTIONS ---
+            toggleMyTasks: (isChecked) => {
+                state.filterMyTasks = isChecked;
+                app.renderEvents(state.events);
+            },
+
+            renderEvents: (data) => {
+                const feed = document.getElementById('eventsFeed');
+                const pastFeed = document.getElementById('pastFeed');
+                feed.innerHTML = "";
+                pastFeed.innerHTML = "";
+
+                if(Object.keys(data).length === 0) { 
+                    feed.innerHTML = "<p style='text-align:center'>No events yet.</p>"; 
+                    return; 
+                }
+
+                const eventsArr = Object.entries(data).reverse();
+                let hasActive = false;
+                let hasPast = false;
+
+                eventsArr.forEach(([eventId, event]) => {
+                    // FILTER LOGIC
+                    if (state.filterMyTasks) {
+                        let myTaskFound = false;
+                        if(event.tasks) {
+                            Object.values(event.tasks).forEach(t => {
+                                if(t.assignedTo === state.user.uid) myTaskFound = true;
+                            });
+                        }
+                        if(!myTaskFound) return; // Skip this event
+                    }
+
+                    let tasksHtml = "";
+                    const isCompleted = event.status === 'completed';
+                    const isPastDate = event.date && new Date(event.date) < new Date(new Date().setHours(0,0,0,0));
+                    const isHistory = isCompleted || isPastDate;
+                    
+                    if(isHistory) hasPast = true; else hasActive = true;
+
+                    const pastClass = isHistory ? 'past-event' : '';
+                    let badge = "";
+                    if (isCompleted) badge = '<span class="completed-badge">Finished</span>';
+                    else if (isPastDate) badge = '<span class="past-badge">Past Date</span>';
+
+                    // Notes
+                    const notesHtml = event.notes ? `<div class="event-notes">📝 ${event.notes}</div>` : '';
+
+                    if(event.tasks) {
+                        const sortedRoles = Object.keys(event.tasks).sort();
+                        sortedRoles.forEach((role) => {
+                            const info = event.tasks[role];
+                            const isTaken = info.assignedTo ? true : false;
+                            let actionUI = "";
+                            
+                            if(state.user.role === 'admin') {
+                                if(isTaken) {
+                                    actionUI = `
+                                        <div class="assignee">
+                                            ✅ ${info.assignedName}
+                                            <button class="btn-icon" onclick="app.unassign('${eventId}', '${role}')" title="Unassign">❌</button>
+                                        </div>`;
+                                } else {
+                                    let options = `<option value="">Select Member...</option>`;
+                                    state.allUsers.forEach(u => {
+                                        let statusTxt = "";
+                                        if (u.status === 'Busy') statusTxt = "(Busy)";
+                                        else if (u.status === 'Not in Clg') statusTxt = "(Not in Clg)";
+                                        
+                                        options += `<option value="${u.uid}::${u.name}">${u.name} ${statusTxt}</option>`;
+                                    });
+                                    actionUI = `
+                                        <select class="admin-select" onchange="app.adminAssign('${eventId}', '${role}', this.value)">
+                                            ${options}
+                                        </select>
+                                    `;
+                                }
+                            } else {
+                                if (isTaken) {
+                                    actionUI = `<div class="assignee">✅ ${info.assignedName}</div>`;
+                                } else {
+                                    if(isHistory) actionUI = `<span style="color:#999; font-size:0.8rem;">Closed</span>`;
+                                    else actionUI = `<button class="btn btn-primary" style="padding:5px 10px; font-size:0.8rem;" onclick="app.claim('${eventId}', '${role}')">Claim</button>`;
+                                }
+                            }
+
+                            tasksHtml += `
+                                <div class="task-row ${isTaken ? 'taken' : ''}">
+                                    <div class="role-badge">${role}</div>
+                                    ${actionUI}
+                                </div>
+                            `;
+                        });
+                    }
+
+                    // Drive Link Button
+                    let driveBtn = "";
+                    if(event.driveLink) {
+                        driveBtn = `<a href="${event.driveLink}" target="_blank" class="btn btn-drive btn-action" style="text-decoration:none; display:inline-flex; align-items:center;">📂 Upload/View Photos</a>`;
+                    }
+
+                    let adminControls = "";
+                    if(state.user.role === 'admin') {
+                        let endBtn = "";
+                        if (!isCompleted) {
+                            endBtn = `<button class="btn btn-secondary btn-action" onclick="app.endEvent('${eventId}')">🏁 End Event</button>`;
+                        }
+
+                        adminControls = `
+                            <div style="margin-top:10px; padding-top:10px; border-top:1px solid #eee; display:flex; gap:10px; flex-wrap:wrap;">
+                                <button class="btn btn-outline btn-action" onclick="app.openEdit('${eventId}')">✏️ Edit</button>
+                                <button class="btn btn-outline btn-action" onclick="app.generateTextReport('${eventId}')">📋 Copy</button>
+                                <button class="btn btn-primary btn-action" onclick="app.downloadPDF('${eventId}')">📄 PDF</button>
+                                ${endBtn}
+                            </div>
+                        `;
+                    }
+
+                    const card = `
+                        <div class="card ${pastClass}">
+                            <div class="event-header">
+                                <div>
+                                    ${badge}
+                                    <h3 style="margin:0; display:inline-block; vertical-align:middle;">${event.name}</h3>
+                                    <div style="margin-top:5px;">
+                                        <span class="event-date">${event.date || 'TBD'}</span>
+                                    </div>
+                                </div>
+                                ${driveBtn}
+                            </div>
+                            ${notesHtml}
+                            <div>${tasksHtml}</div>
+                            ${adminControls}
+                        </div>
+                    `;
+                    
+                    if(isHistory) pastFeed.innerHTML += card;
+                    else feed.innerHTML += card;
+                });
+
+                if(!hasActive) feed.innerHTML = "<p style='text-align:center; color:#999;'>No upcoming events found.</p>";
+                if(!hasPast) pastFeed.innerHTML = "<p style='text-align:center; color:#999;'>No history available.</p>";
+            },
+
             adminAssign: (eventId, role, value) => {
                 if(!value) return;
-                const [uid, name] = value.split("::"); // We stored both in value
-                
-                update(ref(db, `events/${eventId}/tasks/${role}`), {
-                    assignedTo: uid,
-                    assignedName: name
-                });
+                const [uid, name] = value.split("::");
+                update(ref(db, `events/${eventId}/tasks/${role}`), { assignedTo: uid, assignedName: name });
             },
 
             unassign: (eventId, role) => {
-                if(!confirm("Remove this member from the role?")) return;
-                update(ref(db, `events/${eventId}/tasks/${role}`), {
-                    assignedTo: "",
-                    assignedName: ""
-                });
+                if(!confirm("Remove this member?")) return;
+                update(ref(db, `events/${eventId}/tasks/${role}`), { assignedTo: "", assignedName: "" });
             },
 
             endEvent: (eventId) => {
-                if(!confirm("Mark this event as Completed? It will move to history.")) return;
-                update(ref(db, `events/${eventId}`), {
-                    status: 'completed'
-                });
+                if(!confirm("Mark this event as Completed?")) return;
+                update(ref(db, `events/${eventId}`), { status: 'completed' });
             },
 
-            // --- MEMBER ACTIONS ---
             claim: (eventId, role) => {
                 if(!confirm(`Confirm: You are taking the ${role} role?`)) return;
-                update(ref(db, `events/${eventId}/tasks/${role}`), {
-                    assignedTo: state.user.uid,
-                    assignedName: state.user.name
-                });
+                update(ref(db, `events/${eventId}/tasks/${role}`), { assignedTo: state.user.uid, assignedName: state.user.name });
             },
 
-            // 4. STATS LOGIC
-            calculateStats: () => {
-                const counts = {};
-                Object.values(state.events).forEach(evt => {
-                    if(evt.tasks) {
-                        Object.values(evt.tasks).forEach(task => {
-                            if(task.assignedName) {
-                                counts[task.assignedName] = (counts[task.assignedName] || 0) + 1;
-                            }
-                        });
-                    }
-                });
-
-                const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
-                
-                let html = `<table class="stats-table"><tr><th>Rank</th><th>Member</th><th>Events Covered</th></tr>`;
-                sorted.forEach((item, index) => {
-                    let rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
-                    html += `
-                        <tr>
-                            <td><div class="stats-rank ${rankClass}">${index+1}</div></td>
-                            <td>${item[0]}</td>
-                            <td>${item[1]}</td>
-                        </tr>`;
-                });
-                html += "</table>";
-                
-                if(sorted.length === 0) html = "<p>No data yet.</p>";
-                document.getElementById('statsContent').innerHTML = html;
-            },
-
-            // 5. REPORT GENERATOR
-            generateReport: (eventId) => {
+            generateTextReport: (eventId) => {
                 const evt = state.events[eventId];
-                let text = `*Event Report: ${evt.name}*\n📅 Date: ${evt.date}\n\n*Assignments:*`;
-                
+                let text = `*Event Report: ${evt.name}*\n📅 Date: ${evt.date}\n${evt.notes ? `📝 Note: ${evt.notes}\n` : ''}\n*Assignments:*`;
                 if(evt.tasks) {
                     Object.entries(evt.tasks).forEach(([role, info]) => {
                         const status = info.assignedName ? `✅ ${info.assignedName}` : `🛑 [Open Slot]`;
                         text += `\n${role}: ${status}`;
                     });
                 }
-                
                 text += `\n\nGenerated by APC Dashboard`;
-                navigator.clipboard.writeText(text).then(() => {
-                    alert("Report copied to clipboard! Paste it in WhatsApp.");
-                });
+                navigator.clipboard.writeText(text).then(() => alert("Copied to clipboard!"));
             },
 
-            // 6. EDIT MODAL LOGIC
+            downloadPDF: (eventId) => {
+                const evt = state.events[eventId];
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                doc.setFillColor(255, 87, 34); 
+                doc.rect(0, 0, 210, 20, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(16);
+                doc.setFont("helvetica", "bold");
+                doc.text("APC EVENT REPORT", 10, 13);
+
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(14);
+                doc.text(`Event: ${evt.name}`, 10, 35);
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "normal");
+                doc.text(`Date: ${evt.date || 'TBD'}`, 10, 42);
+                doc.text(`Status: ${evt.status || 'Active'}`, 10, 48);
+                
+                if(evt.notes) {
+                    doc.setFontSize(10);
+                    doc.setTextColor(100);
+                    doc.text(`Notes: ${evt.notes}`, 10, 56);
+                }
+
+                const rows = [];
+                if(evt.tasks) {
+                    Object.keys(evt.tasks).sort().forEach(role => {
+                        const info = evt.tasks[role];
+                        const name = info.assignedName || "--- Open ---";
+                        const status = info.assignedName ? "Assigned" : "Pending";
+                        rows.push([role, name, status]);
+                    });
+                }
+
+                doc.autoTable({
+                    startY: 65,
+                    head: [['Role / Position', 'Member Assigned', 'Status']],
+                    body: rows,
+                    theme: 'striped',
+                    headStyles: { fillColor: [255, 87, 34] },
+                    styles: { fontSize: 10 }
+                });
+
+                doc.save(`APC_Report_${evt.name.replace(/\s+/g, '_')}.pdf`);
+            },
+
             openEdit: (eventId) => {
                 const evt = state.events[eventId];
                 document.getElementById('edit_id').value = eventId;
                 document.getElementById('edit_name').value = evt.name;
                 document.getElementById('edit_date').value = evt.date;
+                document.getElementById('edit_notes').value = evt.notes || "";
+                document.getElementById('edit_drive').value = evt.driveLink || "";
 
                 const container = document.getElementById('edit_roles_container');
                 container.innerHTML = "";
                 
-                state.rolesList.forEach(role => {
-                    const exists = evt.tasks && evt.tasks[role];
-                    const isChecked = exists ? 'checked' : '';
-                    const extra = exists && exists.assignedName ? `(Assigned: ${exists.assignedName})` : '';
-                    
-                    container.innerHTML += `
-                        <label class="checkbox-label">
-                            <input type="checkbox" class="edit-role-check" value="${role}" ${isChecked}>
-                            ${role} <span style="font-size:0.7em; color:#666; margin-left:5px;">${extra}</span>
-                        </label>
-                    `;
-                });
+                if (evt.tasks) {
+                    Object.keys(evt.tasks).sort().forEach(role => {
+                        const info = evt.tasks[role];
+                        const extra = info.assignedName ? `(Assigned: ${info.assignedName})` : '';
+                        container.innerHTML += `
+                            <div class="role-selector">
+                                <label>
+                                    <input type="checkbox" class="edit-role-check" value="${role}" checked>
+                                    ${role} <span style="font-size:0.8em; color:var(--primary); margin-left:5px;">${extra}</span>
+                                </label>
+                            </div>
+                        `;
+                    });
+                }
 
                 document.getElementById('editModal').classList.remove('hidden');
             },
@@ -685,6 +1053,8 @@
                 const id = document.getElementById('edit_id').value;
                 const newName = document.getElementById('edit_name').value;
                 const newDate = document.getElementById('edit_date').value;
+                const newNotes = document.getElementById('edit_notes').value;
+                const newDrive = document.getElementById('edit_drive').value;
                 
                 const existingTasks = state.events[id].tasks || {};
                 const newTasks = {};
@@ -692,17 +1062,15 @@
                 document.querySelectorAll('.edit-role-check').forEach(box => {
                     if(box.checked) {
                         const role = box.value;
-                        if(existingTasks[role]) {
-                            newTasks[role] = existingTasks[role];
-                        } else {
-                            newTasks[role] = { assignedTo: "", assignedName: "" };
-                        }
+                        newTasks[role] = existingTasks[role];
                     }
                 });
 
                 update(ref(db, `events/${id}`), {
                     name: newName,
                     date: newDate,
+                    notes: newNotes,
+                    driveLink: newDrive,
                     tasks: newTasks
                 }).then(() => {
                     document.getElementById('editModal').classList.add('hidden');
@@ -710,7 +1078,28 @@
                 });
             },
 
-            // 7. MEMBER CREATION
+            listenToMembers: () => {
+                const list = document.getElementById('membersList');
+                onValue(ref(db, 'users'), (snapshot) => {
+                    const users = snapshot.val();
+                    if(!users) { list.innerHTML = "No members found."; return; }
+                    
+                    let html = `<table class="stats-table"><tr><th>Name</th><th>Role</th><th>Status</th><th>Action</th></tr>`;
+                    Object.entries(users).forEach(([uid, user]) => {
+                        let st = user.status || 'Available';
+                        let color = st === 'Available' ? 'green' : 'red';
+                        html += `<tr>
+                            <td>${user.name}</td>
+                            <td>${user.role}</td>
+                            <td style="color:${color}; font-weight:bold; font-size:0.8rem;">${st}</td>
+                            <td><button class="btn-icon" onclick="app.deleteMember('${uid}')">🗑️</button></td>
+                        </tr>`;
+                    });
+                    html += "</table>";
+                    list.innerHTML = html;
+                });
+            },
+            deleteMember: (uid) => remove(ref(db, `users/${uid}`)),
             createMember: () => {
                 const data = {
                     name: document.getElementById('new_name').value,
@@ -721,6 +1110,7 @@
                     username: document.getElementById('new_username').value,
                     password: document.getElementById('new_password').value,
                     role: "member",
+                    status: "Available",
                     createdAt: Date.now()
                 };
                 if(!data.username) return alert("Username required");
@@ -730,20 +1120,43 @@
                 });
             },
 
-            // UI TABS
+            calculateStats: () => {
+                const counts = {};
+                Object.values(state.events).forEach(evt => {
+                    if(evt.tasks) {
+                        Object.values(evt.tasks).forEach(task => {
+                            if(task.assignedName) counts[task.assignedName] = (counts[task.assignedName] || 0) + 1;
+                        });
+                    }
+                });
+                const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+                let html = `<table class="stats-table"><tr><th>Rank</th><th>Member</th><th>Events Covered</th></tr>`;
+                sorted.forEach((item, index) => {
+                    let rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
+                    html += `<tr><td><div class="stats-rank ${rankClass}">${index+1}</div></td><td>${item[0]}</td><td>${item[1]}</td></tr>`;
+                });
+                html += "</table>";
+                if(sorted.length === 0) html = "<p>No data yet.</p>";
+                document.getElementById('statsContent').innerHTML = html;
+            },
+
             switchTab: (tabName) => {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                 document.querySelector(`.tab-btn[data-tab="${tabName}"]`).classList.add('active');
                 
-                ['events', 'stats', 'members'].forEach(t => {
+                ['events', 'stats', 'members', 'inventory', 'resources'].forEach(t => {
                     const el = document.getElementById(`${t}Panel`);
                     if(t === tabName) el.classList.remove('hidden');
                     else el.classList.add('hidden');
                 });
-
                 if(tabName === 'stats') app.calculateStats();
+                if(tabName === 'members') app.listenToMembers();
+                if(tabName === 'inventory') app.listenToInventory();
+                if(tabName === 'resources') app.listenToResources();
             }
         };
+
+        app.init();
     </script>
 </body>
 </html>
