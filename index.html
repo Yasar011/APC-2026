@@ -524,7 +524,7 @@
 
                 // ADMIN BACKDOOR
                 let adminName = "";
-                if (u === "Yasar C H" && p === "Yasar@2004") adminName = "Yasar C H";
+                if (u === "Yasar C H" && p === "Yasar@2004") adminName = "Yasar CH"; // Explicitly set to "Yasar CH"
                 if (u === "Suyash" && p === "Suyash@APC") adminName = "Suyash";
 
                 if (adminName) {
@@ -914,7 +914,7 @@
                     const evt = state.events[eid];
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
-                    const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAbFBMVEUAAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD///+m04iZAAAAI3RSTlMAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMv5rMAAAABYktHRACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gEZFBAe859Y0QAAAMRJREFUSMft1MsKwkAMhOGZqK14a7W1Vavv/4Y2uC6C4sCE/Z/Ci5MZhgH/jC5w1Xpzp/a1o/S1S68ta147S187S1+79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69v/4A/o6F45892YfAAAAAElFTkSuQmCC";
+                    const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAbFBMVEUAAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD////8/Pz39/f5+fn29vb8/Pz4+Pj9/f3+/v77+/v5+fn///8AAAD///+AgIAAAAD///+m04iZAAAAI3RSTlMAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMv5rMAAAABYktHRACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gEZFBAe859Y0QAAAMRJREFUSMft1MsKwkAMhOGZqK14a7W1Vavv/4Y2uC6C4sCE/Z/Ci5MZhgH/jC5w1Xpzp/a1o/S1S68ta147S187S1+79Nq69rWj9LWr9Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69rWj9LW79Nq69v/4A/o6F45892YfAAAAAElFTkSuQmCC";
                     try { doc.addImage(logoBase64, 'PNG', 10, 10, 15, 15); } catch(e) {}
                     doc.setFillColor(255, 87, 34); doc.rect(0, 0, 210, 5, 'F');
                     doc.setTextColor(0, 0, 0); doc.setFontSize(22); doc.setFont("helvetica", "bold"); doc.text("APC EVENT REPORT", 30, 22);
@@ -950,13 +950,19 @@
                     if(evt.tasks) Object.keys(evt.tasks).sort().forEach(role => rows.push([role, evt.tasks[role].assignedName || "--- Open ---", evt.tasks[role].assignedName ? "Assigned" : "Pending"]));
                     doc.autoTable({ startY, head: [['Role', 'Member', 'Status']], body: rows, theme: 'striped', headStyles: { fillColor: [255, 87, 34] }, styles: { fontSize: 10 } });
                     
-                    const sigY = doc.internal.pageSize.height - 30;
+                    const sigY = doc.internal.pageSize.height - 35;
                     doc.setLineWidth(0.5); doc.line(130, sigY, 190, sigY);
                     
-                    // DYNAMIC SIGNATURE
-                    const signatureName = `${state.user.name} (${state.user.role === 'admin' ? 'President' : 'Member'})`;
-                    doc.setFontSize(10); doc.setTextColor(0); doc.text(signatureName, 140, sigY + 5);
-                    doc.setFontSize(9); doc.setTextColor(100); doc.text(`Generated: ${new Date().toLocaleDateString()}`, 10, sigY + 5);
+                    doc.setFontSize(10); doc.setTextColor(0);
+                    // Use the logged in user's name
+                    doc.text(state.user.name, 130, sigY + 5); 
+                    
+                    doc.setFontSize(8); doc.setTextColor(100);
+                    // Add the title below
+                    const roleTitle = state.user.role === 'admin' ? "President / Secretary" : "Member";
+                    doc.text(roleTitle, 130, sigY + 10);
+
+                    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 10, sigY + 5);
                     doc.save(`APC_Report.pdf`);
                 } catch(e) { alert("PDF Error: " + e.message); }
             },
