@@ -47,6 +47,7 @@
             justify-content: center;
             gap: 5px;
         }
+        
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-secondary { background: #e0e0e0; color: #333; }
@@ -83,6 +84,25 @@
             display: flex; justify-content: space-between; align-items: center; animation: fadeIn 0.5s;
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- DARK MODE --- */
+        body.dark-mode {
+            --bg: #18191a; --card-bg: #242526; --text-main: #e4e6eb; --text-muted: #b0b3b8; --border: #3a3b3c;
+        }
+        body.dark-mode .card, body.dark-mode header, body.dark-mode .inv-item, body.dark-mode .tab-btn, body.dark-mode .admin-select { background: var(--card-bg); border-color: var(--border); color: var(--text-main); }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #3a3b3c; border-color: #555; color: white; }
+        body.dark-mode .task-row { background: #3a3b3c; border-color: #555; }
+        body.dark-mode .task-row.taken { background: #242526; border-color: #555; }
+        body.dark-mode .role-badge { color: #e4e6eb; }
+        body.dark-mode .event-notes { background: #332d1d; border-left-color: #d4a30b; color: #e4e6eb; }
+        body.dark-mode .modal-content { background: var(--card-bg); color: var(--text-main); }
+        body.dark-mode .role-selector { background: #3a3b3c; border-color: #555; color: #e4e6eb; }
+        body.dark-mode .stats-table th { background: #3a3b3c; color: white; border-color: #555; }
+        body.dark-mode .stats-table td { border-color: #555; }
+        
+        .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
+        .inv-status-avail { background: #e8f5e9; color: #2e7d32; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .inv-status-out { background: #ffebee; color: #c62828; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
 
         /* Items */
         .inv-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; background: white; }
@@ -159,6 +179,15 @@
         .rank-2 { background: silver; color: #333; }
         .rank-3 { background: #CD7F32; }
 
+        .type-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-block; margin-right: 8px; vertical-align: middle; }
+        .type-Shoot { background: #e1bee7; color: #6a1b9a; }
+        .type-Meeting { background: #bbdefb; color: #1565c0; }
+        .type-Workshop { background: #c8e6c9; color: #2e7d32; }
+        .type-Other { background: #f5f5f5; color: #616161; }
+        
+        .clickable-avatar { cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .clickable-avatar:hover { transform: scale(1.1); box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+
         /* Modal & Overlay */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
@@ -169,6 +198,13 @@
         .filter-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer; background: white; padding: 8px 12px; border-radius: 20px; border: 1px solid #ddd; user-select: none; }
         .filter-toggle:hover { background: #f9f9f9; }
 
+        /* Custom Dialog & Toast */
+        #toastContainer { position: fixed; bottom: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: var(--text-main); color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideIn 0.3s ease-out forwards; font-size: 0.9rem; max-width: 350px; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast.fade-out { animation: fadeOut 0.3s ease-out forwards; }
+        @keyframes fadeOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+
     </style>
 </head>
 <body>
@@ -177,7 +213,8 @@
     <div id="loginView" class="login-container">
         <div class="login-card">
             <div class="login-logo">
-                <img src="APC LOGO PNG.png" alt="Logo">
+                <!-- Placeholder used if image is missing -->
+                <img src="https://cdn-icons-png.flaticon.com/512/3176/3176371.png" alt="Logo" onerror="this.src='https://placehold.co/80x80/FF5722/FFFFFF?text=APC'">
             </div>
             <h2 style="margin-top:0;">APC Command Center</h2>
             <p style="color:var(--text-muted); margin-bottom:20px;">President & Member Login</p>
@@ -229,11 +266,13 @@
                 APC Club
             </div>
             <div class="user-info">
+                <button class="btn-icon" onclick="app.toggleDarkMode()" style="font-size: 1.2rem; margin-right: 10px;" id="darkModeBtn">🌙</button>
                 <select id="userStatus" class="status-select" onchange="app.updateStatus(this.value)">
                     <option value="Available">🟢 Available</option>
                     <option value="Busy">🔴 Busy / Exams</option>
                     <option value="Not in Clg">⛔ Not in Clg</option>
                 </select>
+                <div class="avatar clickable-avatar" id="userAvatar" onclick="app.openProfile()" title="My Profile">U</div>
                 <span id="displayUserName" style="margin-right:10px;">User</span>
                 <button class="btn btn-danger" onclick="app.logout()" style="padding: 5px 12px; font-size:0.8rem;">Logout</button>
             </div>
@@ -249,6 +288,15 @@
                 <button id="editNoticeBtn" class="btn-icon hidden" onclick="app.editNotice()" title="Edit Notice">✏️</button>
             </div>
             
+            <!-- NEW FEATURE: MY HUB SUMMARY -->
+            <div id="myHubCard" class="card" style="display: flex; gap: 20px; align-items: center; padding: 15px 25px;">
+                <div id="hubAvatar" style="width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">U</div>
+                <div style="flex-grow: 1;">
+                    <h3 style="margin: 0 0 5px; color: var(--text-main);">Welcome back, <span id="hubName">User</span>! 👋</h3>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">You have <strong id="hubTaskCount" style="color:var(--primary)">0</strong> upcoming tasks and <strong id="hubItemCount" style="color:var(--success)">0</strong> items checked out.</p>
+                </div>
+            </div>
+
             <!-- TABS -->
             <div id="tabsContainer" class="tabs">
                 <button class="tab-btn active" data-tab="events" onclick="app.switchTab('events')">Manage Events</button>
@@ -302,9 +350,14 @@
             <!-- TAB 3: INVENTORY -->
             <div id="inventoryPanel" class="card hidden">
                 <h3 class="card-title">📦 Equipment Tracker</h3>
-                <div style="display:flex; gap:10px; margin-bottom:20px;">
-                    <input type="text" id="inv_item_name" placeholder="Item Name (e.g. Sony A7III)" style="margin-bottom:0;">
+                <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap: wrap;">
+                    <input type="text" id="inv_item_name" placeholder="Item Name (e.g. Sony A7III)" style="margin-bottom:0; flex-grow: 1;">
                     <button class="btn btn-primary" onclick="app.addInventoryItem()">Add</button>
+                    <select id="inv_filter" class="admin-select" onchange="app.renderInventoryTab()">
+                        <option value="all">All Status</option>
+                        <option value="in">Available Only</option>
+                        <option value="out">Checked Out Only</option>
+                    </select>
                 </div>
                 <div id="inventoryList">Loading gear...</div>
             </div>
@@ -329,20 +382,35 @@
                     <h3 class="card-title">📅 Create New Event</h3>
                     <div class="grid-2">
                         <input type="text" id="evt_name" placeholder="Event Name">
-                        <input type="date" id="evt_date">
+                        <select id="evt_type" style="margin-bottom: 10px;">
+                            <option value="Shoot">📷 Shoot</option>
+                            <option value="Meeting">🤝 Meeting</option>
+                            <option value="Workshop">🎓 Workshop</option>
+                            <option value="Other" selected>📌 Other</option>
+                        </select>
                     </div>
-                    <input type="text" id="evt_report_time" placeholder="Reporting Time (e.g. 9:00 AM or Will inform later)">
+                    <div class="grid-2">
+                        <input type="date" id="evt_date">
+                        <input type="text" id="evt_report_time" placeholder="Reporting Time (e.g. 9:00 AM)">
+                    </div>
                     <textarea id="evt_notes" placeholder="Instructions / Notes (e.g. Dress Code, Meeting Time)"></textarea>
                     <textarea id="evt_permissions" placeholder="Permissions Required (e.g. Principal Approval, HOD Sign, Security Gate Pass)..." style="height:60px;"></textarea>
                     
                     <p style="font-size:0.9rem; font-weight:600; margin-bottom:5px;">Select Roles & Quantities:</p>
                     <div id="roleCreatorList"></div>
-                    <button class="btn btn-primary" onclick="app.publishEvent()" style="margin-top:15px;">Publish Event</button>
+                    <div style="display:flex; gap:10px; margin-top:10px;">
+                        <input type="text" id="custom_role_input" placeholder="Type custom role (e.g. Backstage)..." style="margin-bottom:0;">
+                        <button class="btn btn-secondary btn-action" onclick="app.addCustomRoleToCreate()">+ Add Custom</button>
+                    </div>
+                    <button class="btn btn-primary" onclick="app.publishEvent()" style="margin-top:20px;">Publish Event</button>
                 </div>
 
-                <div style="display:flex; justify-content:space-between; align-items:center; margin: 30px 0 15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin: 30px 0 15px; flex-wrap:wrap; gap:10px;">
                     <h3 style="margin:0;">🔥 Upcoming Events</h3>
-                    <label class="filter-toggle"><input type="checkbox" onchange="app.toggleMyTasks(this.checked)"> Show My Tasks Only</label>
+                    <div style="display:flex; gap:10px; align-items:center; flex-grow:1; max-width: 400px; justify-content: flex-end;">
+                        <input type="text" id="eventSearchInput" placeholder="🔍 Search events..." onkeyup="app.scheduleRender()" style="margin-bottom:0; padding:8px; border-radius:20px; font-size:0.9rem;">
+                        <label class="filter-toggle"><input type="checkbox" onchange="app.toggleMyTasks(this.checked)"> My Tasks</label>
+                    </div>
                 </div>
                 <div id="eventsFeed"><p style="text-align:center; color:#888;">Loading...</p></div>
                 <div class="section-divider">Past Events / History</div>
@@ -357,8 +425,21 @@
         <div class="modal-content">
             <h3 style="margin-top:0;">Edit Event</h3>
             <input type="hidden" id="edit_id">
-            <label style="font-size:0.8rem; font-weight:bold;">Event Name</label>
-            <input type="text" id="edit_name">
+            <div class="grid-2">
+                <div>
+                    <label style="font-size:0.8rem; font-weight:bold;">Event Name</label>
+                    <input type="text" id="edit_name">
+                </div>
+                <div>
+                    <label style="font-size:0.8rem; font-weight:bold;">Category</label>
+                    <select id="edit_type">
+                        <option value="Shoot">📷 Shoot</option>
+                        <option value="Meeting">🤝 Meeting</option>
+                        <option value="Workshop">🎓 Workshop</option>
+                        <option value="Other">📌 Other</option>
+                    </select>
+                </div>
+            </div>
             <div class="grid-2">
                 <div>
                     <label style="font-size:0.8rem; font-weight:bold;">Date</label>
@@ -382,6 +463,10 @@
                 <div style="display:flex; gap:10px; margin-bottom:10px;">
                     <select id="add_role_select" style="margin-bottom:0; flex-grow:1;"></select>
                     <button class="btn btn-primary btn-action" onclick="app.addRoleToEdit()">+ Add</button>
+                </div>
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <input type="text" id="add_custom_edit_role" placeholder="Or type custom role..." style="margin-bottom:0; flex-grow:1;">
+                    <button class="btn btn-secondary btn-action" onclick="app.addCustomRoleToEdit()">+ Add Custom</button>
                 </div>
                 <div id="edit_roles_container" style="max-height:150px; overflow-y:auto; border:1px solid #eee; padding:10px; border-radius:8px;"></div>
                 <p style="font-size:0.8rem; color:#666; margin-top:5px;">Unchecking a role will remove that specific slot.</p>
@@ -432,6 +517,43 @@
         </div>
     </div>
 
+    <!-- MY PROFILE MODAL -->
+    <div id="profileModal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 400px;">
+            <h3 style="margin-top:0;">👤 My Profile</h3>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div id="profileAvatar" style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; margin: 0 auto 10px;">U</div>
+                <h4 id="profileName" style="margin: 0;">Name</h4>
+                <p id="profileRole" style="margin: 5px 0 0; color: var(--text-muted); font-size: 0.9rem;">Role</p>
+            </div>
+            
+            <label style="font-size:0.8rem; font-weight:bold;">Phone Number</label>
+            <input type="text" id="profilePhone" placeholder="Your Phone Number">
+            
+            <label style="font-size:0.8rem; font-weight:bold;">Update Password</label>
+            <input type="text" id="profilePassword" placeholder="Enter new password to change">
+            
+            <div style="display:flex; justify-content:space-between; margin-top:20px;">
+                <button class="btn btn-primary" onclick="app.saveProfile()">Save Changes</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('profileModal').classList.add('hidden')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM DIALOG UI -->
+    <div id="customDialog" class="modal-overlay hidden" style="z-index: 9999;">
+        <div class="modal-content" style="max-width: 350px; text-align: center;">
+            <h3 id="dialogTitle" style="margin-top:0;">Notice</h3>
+            <p id="dialogMessage" style="margin-bottom: 20px; color: var(--text-muted);"></p>
+            <input type="text" id="dialogInput" class="hidden" style="margin-bottom: 15px; text-align: center;">
+            <div style="display:flex; justify-content:center; gap:10px;">
+                <button id="dialogBtnConfirm" class="btn btn-primary" style="min-width: 90px;">OK</button>
+                <button id="dialogBtnCancel" class="btn btn-secondary hidden" style="min-width: 90px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <div id="toastContainer"></div>
+
     <!-- FIREBASE & APP LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -440,6 +562,7 @@
         const firebaseConfig = {
             apiKey: "AIzaSyA3hGyyW5KY5pFw64FrYgAeOg8-nc8uifE",
             authDomain: "apc-command-center.firebaseapp.com",
+            databaseURL: "https://apc-command-center-default-rtdb.firebaseio.com",
             projectId: "apc-command-center",
             storageBucket: "apc-command-center.firebasestorage.app",
             messagingSenderId: "286472910953",
@@ -454,9 +577,53 @@
         let renderTimeout = null;
 
         const state = {
-            user: null, events: {}, 
+            user: null, events: {}, inventory: {},
             rolesList: ['Photography', 'Videography', 'Reels', 'Graphic Design', 'Captioning', 'Hosting', 'Permissions'],
             allUsers: [], filterMyTasks: false
+        };
+
+        // --- CUSTOM UI SYSTEM (Replaces alert, prompt, confirm) ---
+        const customAlert = (msg) => {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+
+        const customConfirm = (msg) => {
+            return new Promise(resolve => {
+                const overlay = document.getElementById('customDialog');
+                document.getElementById('dialogTitle').innerText = 'Confirm';
+                document.getElementById('dialogMessage').innerText = msg;
+                document.getElementById('dialogInput').classList.add('hidden');
+                document.getElementById('dialogBtnCancel').classList.remove('hidden');
+                overlay.classList.remove('hidden');
+
+                document.getElementById('dialogBtnConfirm').onclick = () => { overlay.classList.add('hidden'); resolve(true); };
+                document.getElementById('dialogBtnCancel').onclick = () => { overlay.classList.add('hidden'); resolve(false); };
+            });
+        };
+
+        const customPrompt = (msg, defaultVal = '') => {
+            return new Promise(resolve => {
+                const overlay = document.getElementById('customDialog');
+                document.getElementById('dialogTitle').innerText = 'Input Required';
+                document.getElementById('dialogMessage').innerText = msg;
+                const input = document.getElementById('dialogInput');
+                input.value = defaultVal;
+                input.classList.remove('hidden');
+                document.getElementById('dialogBtnCancel').classList.remove('hidden');
+                overlay.classList.remove('hidden');
+                input.focus();
+
+                document.getElementById('dialogBtnConfirm').onclick = () => { overlay.classList.add('hidden'); resolve(input.value); };
+                document.getElementById('dialogBtnCancel').onclick = () => { overlay.classList.add('hidden'); resolve(null); };
+            });
         };
 
         // --- HELPER: COPY TO CLIPBOARD ---
@@ -481,13 +648,35 @@
         window.app = {
             init: () => {
                 const container = document.getElementById('roleCreatorList');
+                container.innerHTML = "";
                 state.rolesList.forEach((role, i) => {
                     container.innerHTML += `
                         <div class="role-selector">
-                            <label><input type="checkbox" id="chk_new_role_${i}" ${i<2 ? 'checked' : ''}> ${role}</label>
-                            <input type="number" id="qty_new_role_${i}" class="qty-input" value="1" min="1">
+                            <label><input type="checkbox" value="${role}" class="create-role-check" ${i<2 ? 'checked' : ''}> ${role}</label>
+                            <input type="number" class="qty-input create-role-qty" value="1" min="1">
                         </div>`;
                 });
+            },
+
+            addCustomRoleToCreate: () => {
+                const input = document.getElementById('custom_role_input');
+                const role = input.value.trim();
+                if (!role) return;
+                const container = document.getElementById('roleCreatorList');
+                
+                // Prevent duplicate roles being created visually
+                const existing = Array.from(container.querySelectorAll('.create-role-check')).map(cb => cb.value.toLowerCase());
+                if (existing.includes(role.toLowerCase())) {
+                    customAlert("Role already exists in the list!");
+                    return;
+                }
+                
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="role-selector" style="background:#e8f5e9;">
+                        <label><input type="checkbox" value="${role}" class="create-role-check" checked> ${role}</label>
+                        <input type="number" class="qty-input create-role-qty" value="1" min="1">
+                    </div>`);
+                input.value = ''; // clear input after adding
             },
 
             scheduleRender: () => {
@@ -495,6 +684,35 @@
                 renderTimeout = setTimeout(() => {
                     app.renderEvents(state.events);
                 }, 100); // 100ms Debounce to prevent lag
+            },
+
+            updateMyHub: () => {
+                // Calculate Tasks
+                let taskCount = 0;
+                const now = new Date().setHours(0,0,0,0);
+                Object.values(state.events).forEach(evt => {
+                    const isCompleted = evt.status === 'completed';
+                    const isPastDate = evt.date && new Date(evt.date) < new Date(now);
+                    if (!isCompleted && !isPastDate && evt.tasks) {
+                        Object.values(evt.tasks).forEach(t => {
+                            if (t.assignedTo === state.user.uid) taskCount++;
+                        });
+                    }
+                });
+                document.getElementById('hubTaskCount').innerText = taskCount;
+            },
+
+            toggleDarkMode: (forceOn = false) => {
+                const isDark = forceOn || !document.body.classList.contains('dark-mode');
+                if (isDark) {
+                    document.body.classList.add('dark-mode');
+                    document.getElementById('darkModeBtn').innerText = '☀️';
+                    try { localStorage.setItem('apc_dark_mode', 'true'); } catch(e){}
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    document.getElementById('darkModeBtn').innerText = '🌙';
+                    try { localStorage.setItem('apc_dark_mode', 'false'); } catch(e){}
+                }
             },
 
             // --- AUTH SYSTEM ---
@@ -517,13 +735,13 @@
                     createdAt: Date.now()
                 };
 
-                if(!data.name || !data.username || !data.password) { alert("Please fill Name, Username and Password."); return; }
+                if(!data.name || !data.username || !data.password) { customAlert("Please fill Name, Username and Password."); return; }
 
                 push(ref(db, 'pending_users'), data).then(() => {
-                    alert("Registration Submitted! Please ask the President to approve your account.");
+                    customAlert("Registration Submitted! Please ask the President to approve your account.");
                     app.toggleSignup(false);
                     document.querySelectorAll('#signupView input').forEach(i => i.value = '');
-                }).catch(err => alert("Error: " + err.message));
+                }).catch(err => customAlert("Error: " + err.message));
             },
 
             login: async () => {
@@ -540,7 +758,7 @@
                 if (u === "Suyash" && p === "Suyash@APC") adminName = "Suyash";
 
                 if (adminName) {
-                    state.user = { username: adminName, name: adminName, role: "admin", uid: "admin_master", status: "Available" };
+                    state.user = { username: adminName, name: adminName, role: "admin", uid: "admin_master", status: "Available", password: p };
                     await app.loadAllUsersForAdmin(); 
                     app.initDashboard();
                     return;
@@ -597,7 +815,8 @@
                             state.allUsers.push({
                                 uid: childSnap.key,
                                 name: childSnap.val().name,
-                                status: childSnap.val().status || "Available"
+                                status: childSnap.val().status || "Available",
+                                clgId: childSnap.val().clgId || childSnap.val().clgid || "N/A"
                             });
                         });
                     }
@@ -639,12 +858,12 @@
                 data.status = 'Available';
                 push(ref(db, 'users'), data).then(() => {
                     remove(ref(db, `pending_users/${key}`));
-                    alert(`Approved ${data.name}!`);
+                    customAlert(`Approved ${data.name}!`);
                 });
             },
 
-            rejectMember: (key) => {
-                if(confirm("Reject this registration request?")) remove(ref(db, `pending_users/${key}`));
+            rejectMember: async (key) => {
+                if(await customConfirm("Reject this registration request?")) remove(ref(db, `pending_users/${key}`));
             },
 
             initDashboard: () => {
@@ -652,15 +871,42 @@
                 document.getElementById('dashboardView').classList.remove('hidden');
                 document.getElementById('displayUserName').innerText = `${state.user.name}`;
                 document.getElementById('userStatus').value = state.user.status || 'Available';
+                
+                // Set Avatars
+                const initials = state.user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                document.getElementById('userAvatar').innerText = initials;
+                document.getElementById('hubAvatar').innerText = initials;
+                document.getElementById('hubName').innerText = state.user.name;
+
+                // Load Dark mode preference
+                try { if(localStorage.getItem('apc_dark_mode') === 'true') app.toggleDarkMode(true); } catch(e){}
+
                 document.getElementById('noticeBoard').classList.remove('hidden');
                 app.listenToNotice();
 
                 if (state.user.role === 'admin') {
                     document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+                    const editNotice = document.getElementById('editNoticeBtn');
+                    if(editNotice) editNotice.classList.remove('hidden');
                 } else {
                     document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
                 }
                 app.listenToEvents();
+                
+                // Fetch inventory globally for the hub summary
+                onValue(ref(db, 'inventory'), (snapshot) => {
+                    state.inventory = snapshot.val() || {};
+                    let myItems = 0;
+                    Object.values(state.inventory).forEach(item => {
+                        if (item.status === 'out' && item.holder && item.holder.toLowerCase() === state.user.name.toLowerCase()) myItems++;
+                    });
+                    document.getElementById('hubItemCount').innerText = myItems;
+                    
+                    // Live-update the inventory panel if it's currently open
+                    if(!document.getElementById('inventoryPanel').classList.contains('hidden')) {
+                        app.renderInventoryTab();
+                    }
+                });
             },
 
             logout: () => location.reload(),
@@ -674,10 +920,43 @@
                     document.getElementById('noticeText').innerText = snapshot.val() || "Welcome to APC!";
                 });
             },
-            editNotice: () => {
-                const newTxt = prompt("Update Notice:", document.getElementById('noticeText').innerText);
+            
+            openProfile: () => {
+                document.getElementById('profileName').innerText = state.user.name;
+                document.getElementById('profileRole').innerText = state.user.role === 'admin' ? "👑 President / Admin" : "👤 Member";
+                document.getElementById('profileAvatar').innerText = document.getElementById('userAvatar').innerText;
+                document.getElementById('profilePhone').value = state.user.number || "";
+                document.getElementById('profilePassword').value = state.user.password || "";
+                document.getElementById('profileModal').classList.remove('hidden');
+            },
+            
+            saveProfile: () => {
+                if (state.user.uid === 'admin_master') {
+                    customAlert("Admin Master account cannot be updated here.");
+                    document.getElementById('profileModal').classList.add('hidden');
+                    return;
+                }
+                const newPhone = document.getElementById('profilePhone').value;
+                const newPass = document.getElementById('profilePassword').value;
+                
+                if(!newPass) return customAlert("Password cannot be empty!");
+                
+                update(ref(db, `users/${state.user.uid}`), {
+                    number: newPhone,
+                    password: newPass
+                }).then(() => {
+                    state.user.number = newPhone;
+                    state.user.password = newPass;
+                    document.getElementById('profileModal').classList.add('hidden');
+                    customAlert("Profile updated successfully!");
+                }).catch(e => customAlert("Error updating profile."));
+            },
+
+            editNotice: async () => {
+                const newTxt = await customPrompt("Update Notice:", document.getElementById('noticeText').innerText);
                 if(newTxt) set(ref(db, 'notice'), newTxt);
             },
+
             listenToResources: () => {
                 const list = document.getElementById('resourcesList');
                 onValue(ref(db, 'resources'), (snapshot) => {
@@ -697,46 +976,53 @@
                 push(ref(db, 'resources'), { name, link });
                 document.getElementById('res_name').value = ''; document.getElementById('res_link').value = '';
             },
-            deleteResource: (id) => { if(confirm("Delete?")) remove(ref(db, `resources/${id}`)); },
+            deleteResource: async (id) => { if(await customConfirm("Delete?")) remove(ref(db, `resources/${id}`)); },
 
             listenToInventory: () => {
-                const list = document.getElementById('inventoryList');
-                onValue(ref(db, 'inventory'), (snapshot) => {
-                    const items = snapshot.val();
-                    if(!items) { list.innerHTML = "No items."; return; }
-                    let html = "";
-                    Object.entries(items).forEach(([id, item]) => {
-                        let statusUI = item.status === 'out' ? `<span class="inv-status-out">Held by ${item.holder}</span>` : `<span class="inv-status-avail">Available</span>`;
-                        let btns = "";
-                        if(state.user.role === 'admin') {
-                            if(item.status === 'out') btns = `<button class="btn btn-outline btn-action" style="margin-left:10px;" onclick="app.invReturn('${id}')">Return</button>`;
-                            else btns = `<button class="btn btn-primary btn-action" style="margin-left:10px;" onclick="app.invCheckout('${id}')">Check Out</button>`;
-                        }
-                        html += `<div class="inv-item"><div><strong>${item.name}</strong></div><div style="display:flex; align-items:center;">${statusUI} <button class="btn-icon" onclick="app.viewHistory('${id}')" style="margin-left:10px;" title="History">📜</button> ${btns} ${state.user.role === 'admin' ? `<button class="btn-icon" onclick="app.invDelete('${id}')" style="margin-left:10px;">🗑️</button>` : ''}</div></div>`;
-                    });
-                    list.innerHTML = html;
-                });
+                app.renderInventoryTab();
             },
+            
+            renderInventoryTab: () => {
+                const list = document.getElementById('inventoryList');
+                const filter = document.getElementById('inv_filter').value;
+                const items = state.inventory;
+                if(!items || Object.keys(items).length === 0) { list.innerHTML = "No items."; return; }
+                let html = "";
+                Object.entries(items).forEach(([id, item]) => {
+                    if (filter === 'in' && item.status !== 'in') return;
+                    if (filter === 'out' && item.status !== 'out') return;
+                    
+                    let statusUI = item.status === 'out' ? `<span class="inv-status-out">Held by ${item.holder}</span>` : `<span class="inv-status-avail">Available</span>`;
+                    let btns = "";
+                    if(state.user.role === 'admin') {
+                        if(item.status === 'out') btns = `<button class="btn btn-outline btn-action" style="margin-left:10px;" onclick="app.invReturn('${id}')">Return</button>`;
+                        else btns = `<button class="btn btn-primary btn-action" style="margin-left:10px;" onclick="app.invCheckout('${id}')">Check Out</button>`;
+                    }
+                    html += `<div class="inv-item"><div><strong>${item.name}</strong></div><div style="display:flex; align-items:center;">${statusUI} <button class="btn-icon" onclick="app.viewHistory('${id}')" style="margin-left:10px;" title="History">📜</button> ${btns} ${state.user.role === 'admin' ? `<button class="btn-icon" onclick="app.invDelete('${id}')" style="margin-left:10px;">🗑️</button>` : ''}</div></div>`;
+                });
+                list.innerHTML = html;
+            },
+
             addInventoryItem: () => {
                 const name = document.getElementById('inv_item_name').value;
                 if(!name) return;
                 push(ref(db, 'inventory'), { name, status: 'in', holder: '' });
                 document.getElementById('inv_item_name').value = '';
             },
-            invCheckout: (id) => {
-                const person = prompt("Who is taking this?");
+            invCheckout: async (id) => {
+                const person = await customPrompt("Who is taking this?");
                 if(person) {
                     push(ref(db, `inventory/${id}/history`), { action: 'Checked Out', person, timestamp: Date.now() });
                     update(ref(db, `inventory/${id}`), { status: 'out', holder: person });
                 }
             },
-            invReturn: (id) => {
-                if(confirm("Is it back?")) {
+            invReturn: async (id) => {
+                if(await customConfirm("Is it back?")) {
                     push(ref(db, `inventory/${id}/history`), { action: 'Returned', person: state.user.name, timestamp: Date.now() });
                     update(ref(db, `inventory/${id}`), { status: 'in', holder: '' });
                 }
             },
-            invDelete: (id) => { if(confirm("Remove item?")) remove(ref(db, `inventory/${id}`)); },
+            invDelete: async (id) => { if(await customConfirm("Remove item?")) remove(ref(db, `inventory/${id}`)); },
             viewHistory: (id) => {
                 document.getElementById('historyModal').classList.remove('hidden');
                 document.getElementById('historyList').innerHTML = "Loading...";
@@ -756,21 +1042,30 @@
 
             publishEvent: () => {
                 const name = document.getElementById('evt_name').value;
+                const type = document.getElementById('evt_type').value;
                 const date = document.getElementById('evt_date').value;
                 const reportTime = document.getElementById('evt_report_time').value || "Will update later";
                 const notes = document.getElementById('evt_notes').value;
                 const permissions = document.getElementById('evt_permissions').value;
-                if (!name) return alert("Event Name Required");
+                if (!name) return customAlert("Event Name Required");
                 const tasks = {};
-                state.rolesList.forEach((role, i) => {
-                    const id = `chk_new_role_${i}`; const qty = parseInt(document.getElementById(`qty_new_role_${i}`).value) || 1;
-                    if (document.getElementById(id).checked) {
+                
+                // Read directly from DOM to catch dynamically added custom roles
+                document.querySelectorAll('#roleCreatorList .role-selector').forEach(el => {
+                    const checkbox = el.querySelector('.create-role-check');
+                    const qtyInput = el.querySelector('.create-role-qty');
+                    if (checkbox && checkbox.checked) {
+                        const role = checkbox.value;
+                        const qty = parseInt(qtyInput.value) || 1;
                         if (qty === 1) tasks[role] = { assignedTo: "", assignedName: "" };
                         else for (let k = 1; k <= qty; k++) tasks[`${role}_${k}`] = { assignedTo: "", assignedName: "" };
                     }
                 });
-                push(ref(db, 'events'), { name, date, reportTime, notes, permissions, status: 'active', tasks, createdAt: Date.now() });
-                document.getElementById('evt_name').value = ''; document.getElementById('evt_notes').value = ''; document.getElementById('evt_permissions').value = ''; document.getElementById('evt_report_time').value = ''; alert("Event Published!");
+                
+                push(ref(db, 'events'), { name, type, date, reportTime, notes, permissions, status: 'active', tasks, createdAt: Date.now() });
+                document.getElementById('evt_name').value = ''; document.getElementById('evt_notes').value = ''; document.getElementById('evt_permissions').value = ''; document.getElementById('evt_report_time').value = ''; document.getElementById('evt_type').value = 'Other';
+                app.init(); // Reset back to default roles for next creation
+                customAlert("Event Published!");
             },
 
             listenToEvents: () => {
@@ -778,6 +1073,7 @@
                     const data = snapshot.val();
                     state.events = data || {}; 
                     app.scheduleRender(); // Use scheduler
+                    app.updateMyHub();
                 });
             },
 
@@ -805,8 +1101,16 @@
                         adminUserOptions += `<option value="${u.uid}::${u.name}">${u.name} ${u.status === 'Available' ? '' : `(${u.status})`}</option>`;
                     });
                 }
+                
+                const searchQuery = (document.getElementById('eventSearchInput').value || "").toLowerCase();
 
                 eventsArr.forEach(([eventId, event]) => {
+                    // Search Logic
+                    if (searchQuery) {
+                        const searchStr = `${event.name || ''} ${event.notes || ''} ${event.type || ''}`.toLowerCase();
+                        if (!searchStr.includes(searchQuery)) return;
+                    }
+
                     if (state.filterMyTasks) {
                         let myTaskFound = false;
                         if(event.tasks) Object.values(event.tasks).forEach(t => { if(t.assignedTo === state.user.uid) myTaskFound = true; });
@@ -823,15 +1127,20 @@
                         Object.keys(event.tasks).sort().forEach((role) => {
                             const info = event.tasks[role];
                             const isTaken = !!info.assignedTo;
+                            const isMyTask = info.assignedTo === state.user.uid;
+                            
+                            // Feature: Download Digital Pass for self
+                            const passBtn = isMyTask && !isHistory ? `<button class="btn-icon" style="color:var(--primary); background:#fff3e0; border-radius:4px; padding:2px 6px; font-size:0.8rem; font-weight:bold; border: 1px solid var(--primary);" onclick="app.downloadMyPass('${eventId}','${role}')" title="Download Digital Pass">🎫 Pass</button>` : '';
+
                             let actionUI = "";
                             if(state.user.role === 'admin') {
-                                if(isTaken) actionUI = `<div class="assignee">✅ ${info.assignedName} <button class="btn-icon" onclick="app.unassign('${eventId}','${role}')">❌</button></div>`;
+                                if(isTaken) actionUI = `<div class="assignee">✅ ${info.assignedName} ${passBtn} <button class="btn-icon" onclick="app.unassign('${eventId}','${role}')">❌</button></div>`;
                                 else {
                                     // Use cached options string
                                     actionUI = `<select class="admin-select" onchange="app.adminAssign('${eventId}','${role}',this.value)">${adminUserOptions}</select>`;
                                 }
                             } else {
-                                if(isTaken) actionUI = `<div class="assignee">✅ ${info.assignedName}</div>`;
+                                if(isTaken) actionUI = `<div class="assignee">✅ ${info.assignedName} ${passBtn}</div>`;
                                 else if(isHistory) actionUI = `<span style="color:#999; font-size:0.8rem;">Closed</span>`;
                                 else actionUI = `<button class="btn btn-primary" style="padding:5px 10px; font-size:0.8rem;" onclick="app.claim('${eventId}','${role}')">Claim</button>`;
                             }
@@ -872,15 +1181,18 @@
                             <button class="btn btn-outline btn-action" onclick="app.openEdit('${eventId}')">✏️ Edit</button>
                             <a href="${waLink}" target="_blank" class="btn btn-whatsapp btn-action" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px;">📱 Share WA</a>
                             <button class="btn btn-outline btn-action" onclick="app.generateTextReport('${eventId}')">📋 Copy</button>
-                            <button class="btn btn-primary btn-action" onclick="app.downloadPDF('${eventId}')">📄 PDF</button>
+                            <button class="btn btn-primary btn-action" onclick="app.downloadPDF('${eventId}')">📄 PDF Report</button>
+                            <button class="btn btn-outline btn-action" onclick="app.downloadAllPasses('${eventId}')">🎟️ All Passes</button>
                             ${!isCompleted ? `<button class="btn btn-secondary btn-action" onclick="app.endEvent('${eventId}')">🏁 End</button>` : ''}
                         </div>` : 
                         // Member: Request Button
                         (!isHistory ? `<div style="margin-top:10px; border-top:1px solid #eee; padding-top:5px;"><button class="btn btn-outline btn-action" onclick="app.requestRole('${eventId}')">🙋 Request Custom Role</button></div>` : '');
 
+                    const typeBadge = event.type && event.type !== 'Other' ? `<span class="type-badge type-${event.type}">${event.type}</span>` : '';
+
                     const card = `<div class="card ${isHistory?'past-event':''}">
                         <div class="event-header">
-                            <div>${isCompleted ? '<span class="completed-badge">Finished</span>' : (isPastDate ? '<span class="past-badge">Past Date</span>' : '')}<h3 style="margin:0; display:inline-block; vertical-align:middle;">${event.name}</h3><div style="margin-top:5px;"><span class="event-date">${event.date || 'TBD'}</span><span class="event-time" style="background:#eee; padding:4px 10px; border-radius:4px; font-size:0.85rem; font-weight:600; margin-left:5px;">🕒 ${event.reportTime || 'TBD'}</span></div></div>
+                            <div>${isCompleted ? '<span class="completed-badge">Finished</span>' : (isPastDate ? '<span class="past-badge">Past Date</span>' : '')}${typeBadge}<h3 style="margin:0; display:inline-block; vertical-align:middle;">${event.name}</h3><div style="margin-top:5px;"><span class="event-date">${event.date || 'TBD'}</span><span class="event-time" style="background:#eee; padding:4px 10px; border-radius:4px; font-size:0.85rem; font-weight:600; margin-left:5px;">🕒 ${event.reportTime || 'TBD'}</span></div></div>
                             ${event.driveLink ? `<a href="${event.driveLink}" target="_blank" class="btn btn-drive btn-action" style="text-decoration:none;">📂 Upload Photos</a>` : ''}
                         </div>
                         ${event.notes ? `<div class="event-notes">📝 ${event.notes}</div>` : ''}
@@ -898,14 +1210,14 @@
             },
 
             // REQUEST LOGIC
-            requestRole: (eid) => {
-                const role = prompt("What role do you want to request? (e.g., 'Backstage Video')");
+            requestRole: async (eid) => {
+                const role = await customPrompt("What role do you want to request? (e.g., 'Backstage Video')");
                 if (role) {
                     push(ref(db, `events/${eid}/requests`), {
                         uid: state.user.uid,
                         name: state.user.name,
                         role: role
-                    }).then(() => alert("Request sent to President!"));
+                    }).then(() => customAlert("Request sent to President!"));
                 }
             },
             approveRequest: (eid, reqId, uid, name, role) => {
@@ -913,16 +1225,16 @@
                 const safeKey = role.replace(/[#\.\$\/\[\]]/g, "_");
                 update(ref(db, `events/${eid}/tasks/${safeKey}`), { assignedTo: uid, assignedName: name })
                     .then(() => remove(ref(db, `events/${eid}/requests/${reqId}`)))
-                    .then(() => alert("Approved!"));
+                    .then(() => customAlert("Approved!"));
             },
-            rejectRequest: (eid, reqId) => {
-                if(confirm("Reject this request?")) remove(ref(db, `events/${eid}/requests/${reqId}`));
+            rejectRequest: async (eid, reqId) => {
+                if(await customConfirm("Reject this request?")) remove(ref(db, `events/${eid}/requests/${reqId}`));
             },
 
             adminAssign: (eid, role, val) => { if(!val) return; const [uid, name] = val.split("::"); update(ref(db, `events/${eid}/tasks/${role}`), { assignedTo: uid, assignedName: name }); },
-            unassign: (eid, role) => { if(confirm("Remove?")) update(ref(db, `events/${eid}/tasks/${role}`), { assignedTo: "", assignedName: "" }); },
-            endEvent: (eid) => { if(confirm("End event?")) update(ref(db, `events/${eid}`), { status: 'completed' }); },
-            claim: (eid, role) => { if(confirm("Claim role?")) update(ref(db, `events/${eid}/tasks/${role}`), { assignedTo: state.user.uid, assignedName: state.user.name }); },
+            unassign: async (eid, role) => { if(await customConfirm("Remove?")) update(ref(db, `events/${eid}/tasks/${role}`), { assignedTo: "", assignedName: "" }); },
+            endEvent: async (eid) => { if(await customConfirm("End event?")) update(ref(db, `events/${eid}`), { status: 'completed' }); },
+            claim: async (eid, role) => { if(await customConfirm("Claim role?")) update(ref(db, `events/${eid}/tasks/${role}`), { assignedTo: state.user.uid, assignedName: state.user.name }); },
 
             // REPORTING
             generateTextReport: (eid) => {
@@ -930,11 +1242,103 @@
                 let text = `*Event Report: ${evt.name}*\n📅 ${evt.date}\n🕒 Reporting Time: ${evt.reportTime || 'TBD'}\n${evt.notes ? `📝 ${evt.notes}\n` : ''}\n*Assignments:*`;
                 if(evt.tasks) Object.entries(evt.tasks).forEach(([role, info]) => text += `\n${role}: ${info.assignedName ? '✅ '+info.assignedName : '🛑 Open'}`);
                 text += `\n\n- ${state.user.name}\n${state.user.role === 'admin' ? 'President' : 'Member'}, APC Club`;
-                copyToClipboard(text).then(() => alert("Copied to clipboard!")).catch(() => alert("Failed to copy."));
+                copyToClipboard(text).then(() => customAlert("Copied to clipboard!")).catch(() => customAlert("Failed to copy."));
             },
+            
+            // --- ID PASS GENERATION LOGIC ---
+            downloadMyPass: (eid, role) => {
+                const evt = state.events[eid];
+                const info = evt.tasks[role];
+                if (!info || info.assignedTo !== state.user.uid) return;
+                // state.user contains clgId if properly registered
+                app.generatePasses(evt, [{ name: state.user.name, clgId: state.user.clgId || state.user.clgid || "N/A", role: role }]);
+            },
+            downloadAllPasses: (eid) => {
+                const evt = state.events[eid];
+                if(!evt.tasks) return customAlert("No tasks in this event.");
+                const passes = [];
+                Object.keys(evt.tasks).forEach(role => {
+                    const info = evt.tasks[role];
+                    if(info.assignedTo) {
+                        // Lookup user by UID to get College ID
+                        const userObj = state.allUsers.find(u => u.uid === info.assignedTo) || {};
+                        passes.push({ name: info.assignedName, clgId: userObj.clgId || "N/A", role: role });
+                    }
+                });
+                if(passes.length === 0) return customAlert("No assigned members to generate passes for.");
+                app.generatePasses(evt, passes);
+            },
+            generatePasses: (evt, passList) => {
+                try {
+                    if (!window.jspdf) { customAlert("PDF Library not loaded."); return; }
+                    const { jsPDF } = window.jspdf;
+                    
+                    // Standard ID Badge Size (CR80 portrait: 54mm x 86mm)
+                    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: [54, 86] });
+                    
+                    passList.forEach((pass, index) => {
+                        if(index > 0) doc.addPage();
+                        
+                        // Background Header & Border
+                        doc.setFillColor(255, 87, 34); 
+                        doc.rect(0, 0, 54, 15, 'F');
+                        doc.setDrawColor(200, 200, 200);
+                        doc.rect(1, 1, 52, 84); 
+                        
+                        // Header Text
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(10);
+                        doc.setFont("helvetica", "bold");
+                        doc.text("APC EVENT PASS", 27, 10, { align: "center" });
+                        
+                        // Event Name
+                        doc.setTextColor(0, 0, 0);
+                        doc.setFontSize(11);
+                        const splitName = doc.splitTextToSize(evt.name, 50);
+                        doc.text(splitName, 27, 23, { align: "center" });
+                        
+                        // Event Date
+                        doc.setFontSize(8);
+                        doc.setFont("helvetica", "normal");
+                        doc.text(`Date: ${evt.date || 'TBD'}`, 27, 35, { align: "center" });
+                        
+                        // Divider Line
+                        doc.setDrawColor(255, 87, 34);
+                        doc.line(5, 38, 49, 38);
+                        
+                        // Member Details
+                        doc.setFontSize(12);
+                        doc.setFont("helvetica", "bold");
+                        const splitUser = doc.splitTextToSize(pass.name, 50);
+                        doc.text(splitUser, 27, 47, { align: "center" });
+                        
+                        doc.setFontSize(9);
+                        doc.setFont("helvetica", "normal");
+                        doc.text(`ID: ${pass.clgId}`, 27, 58, { align: "center" });
+                        
+                        // Role Highlight Badge
+                        doc.setFillColor(240, 240, 240);
+                        doc.rect(5, 63, 44, 10, 'F');
+                        doc.setFontSize(9);
+                        doc.setFont("helvetica", "bold");
+                        doc.setTextColor(230, 74, 25);
+                        doc.text(pass.role, 27, 69.5, { align: "center" });
+                        
+                        // Footer
+                        doc.setTextColor(150, 150, 150);
+                        doc.setFontSize(6);
+                        doc.setFont("helvetica", "normal");
+                        doc.text("Valid only for the above event.", 27, 82, { align: "center" });
+                    });
+                    
+                    const fileName = passList.length === 1 ? `${passList[0].name}_Pass.pdf` : `All_Passes.pdf`;
+                    doc.save(fileName);
+                } catch(e) { customAlert("PDF Error: " + e.message); }
+            },
+
             downloadPDF: (eid) => {
                 try {
-                    if (!window.jspdf) { alert("PDF Library not loaded."); return; }
+                    if (!window.jspdf) { customAlert("PDF Library not loaded."); return; }
                     const evt = state.events[eid];
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
@@ -989,18 +1393,19 @@
 
                     doc.text(`Generated: ${new Date().toLocaleDateString()}`, 10, sigY + 5);
                     doc.save(`APC_Report.pdf`);
-                } catch(e) { alert("PDF Error: " + e.message); }
+                } catch(e) { customAlert("PDF Error: " + e.message); }
             },
 
             // EDIT EVENT
-            deleteEvent: () => {
+            deleteEvent: async () => {
                 const id = document.getElementById('edit_id').value;
-                if(confirm("Permanently delete event?")) remove(ref(db, `events/${id}`)).then(() => document.getElementById('editModal').classList.add('hidden'));
+                if(await customConfirm("Permanently delete event?")) remove(ref(db, `events/${id}`)).then(() => document.getElementById('editModal').classList.add('hidden'));
             },
             openEdit: (eid) => {
                 const evt = state.events[eid];
                 document.getElementById('edit_id').value = eid;
                 document.getElementById('edit_name').value = evt.name;
+                document.getElementById('edit_type').value = evt.type || "Other";
                 document.getElementById('edit_date').value = evt.date;
                 document.getElementById('edit_report_time').value = evt.reportTime || "";
                 document.getElementById('edit_notes').value = evt.notes || "";
@@ -1024,10 +1429,22 @@
                 const roleBase = document.getElementById('add_role_select').value;
                 if(!roleBase) return;
                 const container = document.getElementById('edit_roles_container');
-                const existing = Array.from(container.querySelectorAll('.edit-role-check')).map(i => i.value);
+                const existing = Array.from(container.querySelectorAll('.edit-role-check')).map(i => i.value.toLowerCase());
                 let newRole = roleBase, count = 1;
-                while(existing.includes(newRole)) { count++; newRole = `${roleBase}_${count}`; }
+                while(existing.includes(newRole.toLowerCase())) { count++; newRole = `${roleBase}_${count}`; }
                 container.insertAdjacentHTML('beforeend', `<div class="role-selector" style="background:#e3f2fd;"><label><input type="checkbox" class="edit-role-check" value="${newRole}" checked> ${newRole} (New)</label></div>`);
+            },
+            addCustomRoleToEdit: () => {
+                const roleBase = document.getElementById('add_custom_edit_role').value.trim();
+                if(!roleBase) return;
+                const container = document.getElementById('edit_roles_container');
+                const existing = Array.from(container.querySelectorAll('.edit-role-check')).map(i => i.value.toLowerCase());
+                
+                let newRole = roleBase, count = 1;
+                while(existing.includes(newRole.toLowerCase())) { count++; newRole = `${roleBase}_${count}`; }
+                
+                container.insertAdjacentHTML('beforeend', `<div class="role-selector" style="background:#e3f2fd;"><label><input type="checkbox" class="edit-role-check" value="${newRole}" checked> ${newRole} (New)</label></div>`);
+                document.getElementById('add_custom_edit_role').value = ''; // clear input
             },
             saveEdit: () => {
                 const id = document.getElementById('edit_id').value;
@@ -1040,6 +1457,7 @@
                 });
                 update(ref(db, `events/${id}`), {
                     name: document.getElementById('edit_name').value,
+                    type: document.getElementById('edit_type').value,
                     date: document.getElementById('edit_date').value,
                     reportTime: document.getElementById('edit_report_time').value,
                     notes: document.getElementById('edit_notes').value,
@@ -1048,8 +1466,8 @@
                     tasks: tasks
                 }).then(() => { 
                     document.getElementById('editModal').classList.add('hidden'); 
-                    alert("Updated!"); 
-                }).catch(e => alert("Error saving: " + e.message));
+                    customAlert("Updated!"); 
+                }).catch(e => customAlert("Error saving: " + e.message));
             },
 
             // MEMBER EDIT
@@ -1073,7 +1491,7 @@
                         document.getElementById('mem_edit_name').value = u.name || "";
                         document.getElementById('mem_edit_number').value = u.number || "";
                         document.getElementById('mem_edit_batch').value = u.batch || "";
-                        document.getElementById('mem_edit_clgid').value = u.clgId || "";
+                        document.getElementById('mem_edit_clgid').value = u.clgId || u.clgid || "";
                         document.getElementById('mem_edit_email').value = u.email || "";
                         document.getElementById('mem_edit_username').value = u.username || "";
                         document.getElementById('mem_edit_password').value = u.password || "";
@@ -1091,9 +1509,9 @@
                     email: document.getElementById('mem_edit_email').value,
                     username: document.getElementById('mem_edit_username').value,
                     password: document.getElementById('mem_edit_password').value
-                }).then(() => { document.getElementById('editMemberModal').classList.add('hidden'); alert("Saved!"); });
+                }).then(() => { document.getElementById('editMemberModal').classList.add('hidden'); customAlert("Saved!"); });
             },
-            deleteMember: (uid) => { if(confirm("Delete member?")) remove(ref(db, `users/${uid}`)); },
+            deleteMember: async (uid) => { if(await customConfirm("Delete member?")) remove(ref(db, `users/${uid}`)); },
             createMember: () => {
                 const data = {
                     name: document.getElementById('new_name').value,
@@ -1105,8 +1523,8 @@
                     password: document.getElementById('new_password').value,
                     role: "member", status: "Available", createdAt: Date.now()
                 };
-                if(!data.username) return alert("Username required");
-                push(ref(db, 'users'), data).then(() => { alert("Created!"); document.querySelectorAll('#membersPanel input').forEach(i => i.value=''); });
+                if(!data.username) return customAlert("Username required");
+                push(ref(db, 'users'), data).then(() => { customAlert("Created!"); document.querySelectorAll('#membersPanel input').forEach(i => i.value=''); });
             },
 
             calculateStats: () => {
